@@ -1,0 +1,36 @@
+{
+  "format": "open-game-blueprint",
+  "version": 1,
+  "createdAt": "2026-10-20T00:00:00.000Z",
+  "game": {
+    "title": "Windline Grand Prix",
+    "pitch": "A high-speed championship on a chain of original coastal circuits. Build a tiny independent team into a title contender through precise driving, smart setup calls, and rivalries you earn on track.",
+    "coreExperience": "Original circuit racing and team career",
+    "tone": "Grounded & cinematic",
+    "ambition": "Expansive",
+    "originality": "New racing world, original drivers, team names, circuit identity, visual language, and implementation.",
+    "playerName": "Alex Vale",
+    "teamName": "Windline Works",
+    "rivalNames": ["Mika Vale", "Tomas Reed", "Aya Nakamura", "Luca Serrano", "Nia Brooks"],
+    "trackName": "Cape Sol Circuit",
+    "trackLengthKm": 4.8,
+    "raceLaps": 3,
+    "accentColor": "#dc583b"
+  },
+  "systems": [
+    { "id": "vehicle-handling", "name": "Vehicle handling", "purpose": "Build speed and manage lateral load through an original circuit.", "status": "planned" },
+    { "id": "race-weekend", "name": "Race weekend", "purpose": "Complete a multi-lap race against an original driver grid.", "dependsOn": ["vehicle-handling"], "status": "planned" },
+    { "id": "garage-setup", "name": "Garage setup", "purpose": "Trade downforce and power for different driving feel.", "dependsOn": ["vehicle-handling"], "status": "planned" },
+    { "id": "team-career", "name": "Team career", "purpose": "Persist reputation, race count, and wins between local sessions.", "dependsOn": ["race-weekend"], "status": "planned" },
+    { "id": "online-rooms", "name": "Online rooms", "purpose": "Race with friends through a shared server-simulated race state.", "dependsOn": ["race-weekend"], "status": "planned" }
+  ],
+  "production": {
+    "targetPlatform": "Desktop browser",
+    "multiplayer": { "enabled": true, "mode": "Friend-hosted WebSocket room", "maxPlayers": 8 }
+  },
+  "originalityReview": [
+    "All named drivers, teams, and tracks are original placeholders.",
+    "Replace any future third-party assets only after recording their source and license.",
+    "This blueprint is not legal clearance and cannot guarantee protection from legal claims."
+  ]
+}

@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title description">
+  <title id="title">Open Game: from original idea to playable game</title>
+  <desc id="description">A game creator gives a brief to a coding LLM with the Open Game repository loaded. The repository provides a creator skill, originality guardrails, shared blueprint, MCP and CLI, and a browser racing game adapter. The result is a downloadable playable game and optional friend-hosted multiplayer server, which feed back into another development iteration.</desc>
+  <defs>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#34403d" opacity=".52"/></pattern>
+    <linearGradient id="glow" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#bfe779" stop-opacity=".13"/><stop offset="1" stop-color="#58c7c5" stop-opacity=".02"/></linearGradient>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0L9 4.5 0 9z" fill="#c4f169"/></marker>
+    <marker id="arrowMuted" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0L9 4.5 0 9z" fill="#77877d"/></marker>
+    <style>
+      text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;fill:#edf1e9}.mono{font-family:"SFMono-Regular",Consolas,monospace;letter-spacing:.12em}.muted{fill:#97a39a}.lime{fill:#c4f169}.teal{fill:#72d4d0}.coral{fill:#f18a69}.tiny{font-size:11px}.small{font-size:13px}.label{font-size:11px;font-weight:700;letter-spacing:.15em}.card{fill:#141b1a;stroke:#36413c;stroke-width:1.2}.subcard{fill:#1b2421;stroke:#34423a;stroke-width:1}.outline{fill:none;stroke:#7e9a69;stroke-width:1.3}
+    </style>
+  </defs>
+  <rect width="1200" height="720" rx="20" fill="#0c1110"/>
+  <rect width="1200" height="720" rx="20" fill="url(#dots)"/>
+  <rect x="30" y="25" width="1140" height="670" rx="18" fill="url(#glow)" stroke="#27312d"/>
+
+  <g transform="translate(64 57)">
+    <circle cx="15" cy="15" r="15" fill="#c4f169"/>
+    <path d="M7 18V11h3v7m3 0V7h3v11m3 0v-5h3v5" fill="none" stroke="#172015" stroke-width="2"/>
+    <text x="43" y="13" class="mono label" font-size="13">OPEN GAME</text>
+    <text x="43" y="31" class="mono tiny muted">CREATOR TOOLKIT / WORKING MODEL</text>
+  </g>
+  <text x="64" y="145" font-size="37" font-weight="750" letter-spacing="-1.7">From a big idea to a game you can play.</text>
+  <text x="66" y="174" class="small muted">A coding LLM uses Open Game as the workflow, project contract, game builder, and multiplayer starter.</text>
+
+  <!-- Step labels -->
+  <g class="mono label">
+    <text x="72" y="224" class="muted">01  CREATOR BRIEF</text>
+    <text x="393" y="224" class="muted">02  LLM + OPEN GAME REPO</text>
+    <text x="913" y="224" class="muted">03  PLAYABLE OUTPUT</text>
+  </g>
+
+  <!-- Prompt card -->
+  <rect x="64" y="243" width="250" height="260" rx="13" class="card"/>
+  <rect x="64" y="243" width="250" height="5" rx="3" fill="#f18a69"/>
+  <text x="86" y="280" class="mono tiny coral">YOUR ORIGINAL VISION</text>
+  <text x="86" y="317" font-size="20" font-weight="650">“Build a coastal</text>
+  <text x="86" y="342" font-size="20" font-weight="650">racing career for</text>
+  <text x="86" y="367" font-size="20" font-weight="650">my team and drivers.”</text>
+  <path d="M86 389H291" stroke="#35413b"/>
+  <text x="86" y="415" class="small muted">Creator chooses the names,</text>
+  <text x="86" y="435" class="small muted">world, tone, platform, and</text>
+  <text x="86" y="455" class="small muted">systems that make it theirs.</text>
+  <rect x="86" y="472" width="105" height="20" rx="10" fill="#34251f"/>
+  <text x="98" y="486" class="mono tiny coral">CUSTOM BRIEF</text>
+
+  <!-- Arrow 1 -->
+  <path d="M320 372H365" fill="none" stroke="#c4f169" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="321" y="357" class="mono tiny muted">LOAD REPO</text>
+
+  <!-- LLM and repo container -->
+  <rect x="377" y="243" width="490" height="260" rx="13" class="card"/>
+  <rect x="377" y="243" width="490" height="5" rx="3" fill="#c4f169"/>
+  <g transform="translate(399 266)">
+    <circle cx="14" cy="14" r="14" fill="#28351f" stroke="#607b3f"/>
+    <path d="M8 14h12M14 8v12" stroke="#c4f169" stroke-width="2"/>
+    <text x="40" y="12" font-size="17" font-weight="700">Coding LLM</text>
+    <text x="40" y="30" class="tiny muted">reads instructions · calls tools · implements the game</text>
+  </g>
+  <path d="M399 315H845" stroke="#35413b"/>
+  <g>
+    <rect x="399" y="332" width="212" height="64" rx="8" class="subcard"/>
+    <text x="416" y="355" class="mono tiny lime">SKILL + GUARDRAILS</text>
+    <text x="416" y="377" class="tiny muted">name-pattern scan · review only</text>
+    <rect x="623" y="332" width="222" height="64" rx="8" class="subcard"/>
+    <text x="640" y="355" class="mono tiny teal">SHARED PROJECT CORE</text>
+    <text x="640" y="377" class="tiny muted">versioned blueprint · project files</text>
+    <rect x="399" y="410" width="212" height="64" rx="8" class="subcard"/>
+    <text x="416" y="433" class="mono tiny coral">MCP + CLI + STUDIO</text>
+    <text x="416" y="455" class="tiny muted">same operations, agent or human</text>
+    <rect x="623" y="410" width="222" height="64" rx="8" class="subcard"/>
+    <text x="640" y="433" class="mono tiny lime">BROWSER RACING ADAPTER</text>
+    <text x="640" y="455" class="tiny muted">generates source · builds · ZIPs game</text>
+  </g>
+
+  <!-- Arrow 2 -->
+  <path d="M873 372H907" fill="none" stroke="#c4f169" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="869" y="357" class="mono tiny muted">BUILD</text>
+
+  <!-- Output cards -->
+  <rect x="919" y="243" width="219" height="152" rx="13" class="card"/>
+  <rect x="919" y="243" width="5" height="152" rx="3" fill="#72d4d0"/>
+  <text x="943" y="278" class="mono tiny teal">DOWNLOADABLE ZIP</text>
+  <text x="943" y="309" font-size="18" font-weight="700">Playable browser game</text>
+  <text x="943" y="338" class="tiny muted">AI grid · setup · race laps</text>
+  <text x="943" y="357" class="tiny muted">career reputation · saved profile</text>
+  <text x="943" y="376" class="tiny muted">editable HTML / CSS / JavaScript</text>
+
+  <rect x="919" y="411" width="219" height="92" rx="13" class="card"/>
+  <rect x="919" y="411" width="5" height="92" rx="3" fill="#f18a69"/>
+  <text x="943" y="442" class="mono tiny coral">OPTIONAL SERVER</text>
+  <text x="943" y="468" font-size="16" font-weight="700">Friend-hosted multiplayer</text>
+  <text x="943" y="488" class="tiny muted">shared start · up to 8 drivers</text>
+
+  <!-- Iteration loop -->
+  <path d="M1030 516V570Q1030 592 1008 592H231Q209 592 209 571V517" fill="none" stroke="#77877d" stroke-width="1.7" stroke-dasharray="7 6" marker-end="url(#arrowMuted)"/>
+  <rect x="414" y="563" width="400" height="59" rx="29" fill="#151d19" stroke="#53664b"/>
+  <circle cx="444" cy="592" r="13" fill="#293a26"/>
+  <path d="M439 592a5 5 0 1 0 5-5m-5 1v-4m0 4h4" fill="none" stroke="#c4f169" stroke-width="1.7"/>
+  <text x="470" y="587" font-size="14" font-weight="700">Play → give feedback → LLM updates files → rebuild</text>
+  <text x="470" y="606" class="tiny muted">Each loop grows the creator’s own game; it does not copy a franchise.</text>
+
+  <text x="65" y="660" class="mono tiny muted">FIRST ADAPTER: ORIGINAL RACING PROTOTYPE</text>
+  <text x="1137" y="660" text-anchor="end" class="mono tiny muted">A STARTING POINT, NOT AAA IN ONE CLICK</text>
+</svg>

@@ -1,0 +1,237 @@
+import path from 'node:path';
+import { lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
+
+const FORMAT = 'open-game-blueprint';
+const REFERENCE_TERMS = [
+  ['F1', /\bf1\b/i],
+  ['Formula 1', /formula\s+one/i],
+  ['Grand Theft Auto', /grand\s+theft\s+auto/i],
+  ['GTA', /\bgta\b/i],
+  ['Red Dead Redemption', /red\s+dead\s+redemption/i],
+  ['RDR2', /\brdr\s*2\b/i],
+  ['Forza Horizon', /forza\s+horizon/i],
+  ['Need for Speed', /need\s+for\s+speed/i],
+  ['Gran Turismo', /gran\s+turismo/i]
+];
+
+function slugify(value) {
+  return value.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'game-project';
+}
+
+function assertString(value, label, maxLength = 4000) {
+  if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} must be a non-empty string.`);
+  if (value.length > maxLength) throw new Error(`${label} must be ${maxLength} characters or fewer.`);
+  return value.trim();
+}
+
+export function validateBlueprint(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('Blueprint must be a JSON object.');
+  if (input.format !== FORMAT) throw new Error(`Blueprint format must be "${FORMAT}".`);
+  if (input.version !== 1) throw new Error('Unsupported blueprint version. Expected version 1.');
+  const game = input.game;
+  if (!game || typeof game !== 'object') throw new Error('Blueprint is missing the game section.');
+  assertString(game.title, 'Game title', 100);
+  assertString(game.pitch, 'Game pitch', 4000);
+  assertString(game.coreExperience, 'Core experience', 100);
+  assertString(game.tone, 'Game tone', 100);
+  if (game.playerName !== undefined) assertString(game.playerName, 'Player name', 40);
+  if (game.teamName !== undefined) assertString(game.teamName, 'Team name', 50);
+  if (game.trackName !== undefined) assertString(game.trackName, 'Track name', 60);
+  if (game.rivalNames !== undefined && (!Array.isArray(game.rivalNames) || game.rivalNames.length > 7)) throw new Error('Rival names must be an array with at most 7 names.');
+  for (const [index, name] of (game.rivalNames || []).entries()) assertString(name, `Rival ${index + 1}`, 40);
+  if (game.trackLengthKm !== undefined && (!Number.isFinite(Number(game.trackLengthKm)) || Number(game.trackLengthKm) < 1 || Number(game.trackLengthKm) > 20)) throw new Error('Track length must be between 1 and 20 km.');
+  if (game.raceLaps !== undefined && (!Number.isInteger(Number(game.raceLaps)) || Number(game.raceLaps) < 1 || Number(game.raceLaps) > 12)) throw new Error('Race laps must be a whole number from 1 to 12.');
+  if (game.accentColor !== undefined && !/^#[0-9a-f]{6}$/i.test(game.accentColor)) throw new Error('Accent color must be a six-digit hex color.');
+  if (!Array.isArray(input.systems)) throw new Error('Blueprint systems must be an array.');
+  const seen = new Set();
+  for (const [index, system] of input.systems.entries()) {
+    assertString(system?.name, `System ${index + 1} name`, 100);
+    const id = system.id || slugify(system.name);
+    if (seen.has(id)) throw new Error(`Duplicate system id: ${id}`);
+    seen.add(id);
+  }
+  return input;
+}
+
+export function normalizeBlueprint(input) {
+  validateBlueprint(input);
+  const systems = input.systems.map(system => ({
+    id: system.id || slugify(system.name),
+    name: system.name.trim(),
+    purpose: system.purpose?.trim() || `Define how ${system.name.trim().toLowerCase()} supports the core player experience.`,
+    inputs: Array.isArray(system.inputs) ? system.inputs : [],
+    outputs: Array.isArray(system.outputs) ? system.outputs : [],
+    dependsOn: Array.isArray(system.dependsOn) ? system.dependsOn : [],
+    status: system.status || 'planned'
+  }));
+  return {
+    format: FORMAT,
+    version: 1,
+    createdAt: input.createdAt || new Date().toISOString(),
+    game: {
+      title: input.game.title.trim(),
+      slug: slugify(input.game.title),
+      pitch: input.game.pitch.trim(),
+      coreExperience: input.game.coreExperience.trim(),
+      tone: input.game.tone.trim(),
+      ambition: input.game.ambition || 'Expansive',
+      originality: input.game.originality || 'Original expression, world, characters, story, visual identity, audio, and implementation.',
+      playerName: input.game.playerName || 'Racer',
+      teamName: input.game.teamName || 'Open Team',
+      rivalNames: Array.isArray(input.game.rivalNames) ? input.game.rivalNames.slice(0, 7).map(value => String(value).slice(0, 40)) : [],
+      trackName: input.game.trackName || 'Coastal Grand Circuit',
+      trackLengthKm: Number(input.game.trackLengthKm) || 4.2,
+      raceLaps: Math.max(1, Math.min(12, Number(input.game.raceLaps) || 3)),
+      accentColor: /^#[0-9a-f]{6}$/i.test(input.game.accentColor || '') ? input.game.accentColor : '#df4b36'
+    },
+    systems,
+    production: input.production || {},
+    originalityReview: Array.isArray(input.originalityReview) ? input.originalityReview : []
+  };
+}
+
+export function assessOriginality(input) {
+  const blueprint = normalizeBlueprint(input);
+  const fields = [
+    ['game title', blueprint.game.title], ['game pitch', blueprint.game.pitch],
+    ['core experience', blueprint.game.coreExperience], ['team name', blueprint.game.teamName],
+    ['track name', blueprint.game.trackName], ['rival names', blueprint.game.rivalNames.join(' ')],
+    ['system names', blueprint.systems.map(system => system.name).join(' ')]
+  ];
+  const matches = [];
+  for (const [label, value] of fields) for (const [reference, pattern] of REFERENCE_TERMS) {
+    if (pattern.test(value)) matches.push({ field: label, reference });
+  }
+  return {
+    status: matches.length ? 'review-needed' : 'no-known-reference-pattern-detected',
+    matches,
+    notes: [
+      'This lightweight scan checks selected blueprint text only. It does not analyze source code, art, audio, maps, other assets, or the finished game.',
+      'A match is a prompt for creator review, not a legal conclusion. No match does not establish originality, non-infringement, or protection from a legal claim.',
+      'Use distinct names, characters, stories, locations, visual identities, UI, audio, and assets; get qualified legal advice for commercial or uncertain uses.'
+    ]
+  };
+}
+
+async function resolveProjectPath(workspacePath, projectPath) {
+  const root = await realpath(workspacePath);
+  const absolute = path.resolve(root, projectPath);
+  const relative = path.relative(root, absolute);
+  if (!relative || relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new Error('Project path must point to a new folder inside the configured workspace.');
+  }
+  let current = root;
+  for (const part of relative.split(path.sep)) {
+    current = path.join(current, part);
+    try {
+      const stat = await lstat(current);
+      if (stat.isSymbolicLink()) throw new Error('Project paths cannot pass through symbolic links.');
+      if (current !== absolute && !stat.isDirectory()) throw new Error('A project path component is not a directory.');
+    } catch (error) {
+      if (error.code === 'ENOENT') break;
+      throw error;
+    }
+  }
+  return absolute;
+}
+
+function makeDesignDoc(blueprint) {
+  const { game } = blueprint;
+  const systemLines = blueprint.systems.length
+    ? blueprint.systems.map(system => `- **${system.name}** — ${system.purpose}`).join('\n')
+    : '- Add the first system that supports the core player experience.';
+  return `# ${game.title}\n\n## Game vision\n\n${game.pitch}\n\n- **Core experience:** ${game.coreExperience}\n- **Tone:** ${game.tone}\n- **Ambition:** ${game.ambition}\n\n## Original identity\n\n${game.originality}\n\nCreate original names, characters, locations, story, visual direction, interface, and assets. Record the source and license for third-party material. This document is a creative brief, not legal clearance.\n\n## Planned game systems\n\n${systemLines}\n\n## First playable slice\n\nBuild one small but polished part that proves the defining experience. Include one representative play space, the core activity, one meaningful progression result, and a world or character reaction. Keep the larger destination intact in this document and expand in milestones.\n\n## Current status\n\n- Project created from an Open Game blueprint.\n- Engine implementation: not generated yet.\n- Next: choose or inspect the target engine, then implement the core playable slice.\n`;
+}
+
+function makeMilestoneDoc(blueprint) {
+  const names = blueprint.systems.map(system => system.name);
+  const core = names[0] || 'Core player activity';
+  return `# ${blueprint.game.title}: build milestones\n\n## Destination\n\n${blueprint.game.pitch}\n\n## Milestone 1 — prove the core experience\n\n- Implement **${core}** in one representative play space.\n- Make controls, camera, response, and feedback feel deliberate.\n- Add one short activity with a clear start, success, failure, and recovery path.\n- End with a meaningful reward or world-state change.\n\n## Milestone 2 — connect supporting systems\n\n${names.slice(1).map(name => `- Connect **${name}** to shared player or world state.`).join('\n') || '- Add one supporting system based on player feedback.'}\n\n## Milestone 3 — expand the world\n\n- Add more content only after the core loop is enjoyable and stable.\n- Keep expansion within the game's performance and production budget.\n- Track asset sources and licenses as content is added.\n\n## Do not mistake\n\nThis plan is a staged route toward the full vision. The initial scaffold is not a finished game and does not yet contain engine gameplay.\n`;
+}
+
+function makeAssetLedger() {
+  return 'asset_id,asset_name,creator_or_source,source_url,license,changes,project_usage,review_status\n';
+}
+
+export async function createGameProject({ workspacePath = process.cwd(), projectPath, blueprint }) {
+  if (!projectPath) throw new Error('projectPath is required.');
+  const normalized = normalizeBlueprint(blueprint);
+  const destination = await resolveProjectPath(workspacePath, projectPath);
+  await mkdir(destination, { recursive: false });
+  await mkdir(path.join(destination, 'docs'));
+  await mkdir(path.join(destination, 'assets'));
+  await writeFile(path.join(destination, 'open-game.json'), `${JSON.stringify(normalized, null, 2)}\n`, { flag: 'wx' });
+  await writeFile(path.join(destination, 'README.md'), `# ${normalized.game.title}\n\nOriginal game project created with Open Game.\n\n## Current state\n\nThis folder contains the game's initial blueprint and production plan. An engine project and playable systems still need to be generated.\n\n## Design files\n\n- [Game design](docs/GAME_DESIGN.md)\n- [Build milestones](docs/MILESTONES.md)\n- [Asset provenance](assets/ASSET_LEDGER.csv)\n`, { flag: 'wx' });
+  await writeFile(path.join(destination, 'docs', 'GAME_DESIGN.md'), makeDesignDoc(normalized), { flag: 'wx' });
+  await writeFile(path.join(destination, 'docs', 'MILESTONES.md'), makeMilestoneDoc(normalized), { flag: 'wx' });
+  await writeFile(path.join(destination, 'assets', 'ASSET_LEDGER.csv'), makeAssetLedger(), { flag: 'wx' });
+  return { projectPath: destination, blueprint: normalized, createdFiles: ['open-game.json', 'README.md', 'docs/GAME_DESIGN.md', 'docs/MILESTONES.md', 'assets/ASSET_LEDGER.csv'] };
+}
+
+export async function readGameProject({ workspacePath = process.cwd(), projectPath }) {
+  if (!projectPath) throw new Error('projectPath is required.');
+  const destination = await resolveProjectPath(workspacePath, projectPath);
+  const text = await readFile(path.join(destination, 'open-game.json'), 'utf8');
+  return normalizeBlueprint(JSON.parse(text));
+}
+
+export async function addGameSystem({ workspacePath = process.cwd(), projectPath, name, purpose, inputs = [], outputs = [], dependsOn = [] }) {
+  const blueprint = await readGameProject({ workspacePath, projectPath });
+  const id = slugify(assertString(name, 'System name', 100));
+  if (blueprint.systems.some(system => system.id === id)) throw new Error(`A system named "${name}" already exists.`);
+  const existing = new Set(blueprint.systems.map(system => system.id));
+  for (const dependency of dependsOn) if (!existing.has(dependency)) throw new Error(`Unknown system dependency: ${dependency}`);
+  blueprint.systems.push({ id, name: name.trim(), purpose: purpose?.trim() || `Define how ${name.trim().toLowerCase()} supports the core player experience.`, inputs, outputs, dependsOn, status: 'planned' });
+  const destination = await resolveProjectPath(workspacePath, projectPath);
+  await writeFile(path.join(destination, 'open-game.json'), `${JSON.stringify(blueprint, null, 2)}\n`);
+  await writeFile(path.join(destination, 'docs', 'GAME_DESIGN.md'), makeDesignDoc(blueprint));
+  await writeFile(path.join(destination, 'docs', 'MILESTONES.md'), makeMilestoneDoc(blueprint));
+  return blueprint;
+}
+
+export async function planVerticalSlice({ workspacePath = process.cwd(), projectPath }) {
+  const blueprint = await readGameProject({ workspacePath, projectPath });
+  const systems = blueprint.systems;
+  const known = new Set(systems.map(system => system.id));
+  const indegree = new Map(systems.map(system => [system.id, 0]));
+  const downstream = new Map(systems.map(system => [system.id, []]));
+  for (const system of systems) {
+    for (const dependency of system.dependsOn) {
+      if (!known.has(dependency)) throw new Error(`System "${system.name}" depends on missing system "${dependency}".`);
+      indegree.set(system.id, indegree.get(system.id) + 1);
+      downstream.get(dependency).push(system.id);
+    }
+  }
+  const queue = [...indegree].filter(([, count]) => count === 0).map(([id]) => id);
+  const order = [];
+  while (queue.length) {
+    const id = queue.shift();
+    order.push(id);
+    for (const next of downstream.get(id)) {
+      indegree.set(next, indegree.get(next) - 1);
+      if (indegree.get(next) === 0) queue.push(next);
+    }
+  }
+  if (order.length !== systems.length) throw new Error('System dependencies contain a cycle. Resolve the cycle before planning a build.');
+  const byId = new Map(systems.map(system => [system.id, system]));
+  return {
+    game: blueprint.game.title,
+    coreExperience: blueprint.game.coreExperience,
+    firstPlayableSlice: {
+      goal: `Prove the core experience: ${blueprint.game.coreExperience}.`,
+      systemsInBuildOrder: order.map(id => ({ id, name: byId.get(id).name })),
+      acceptanceCriteria: [
+        'The player can start and complete one representative activity.',
+        'Controls, camera, and feedback clearly communicate the core experience.',
+        'At least one supporting system reacts to player actions through shared game state.',
+        'Success, failure, and recovery have intentional outcomes.',
+        'A progression or world-state change persists for the next session.'
+      ],
+      next: 'Implement this slice in the selected game engine, then play it and refine the core loop before adding large volumes of content.'
+    }
+  };
+}
+
+export async function resolveWorkspaceDestination(workspacePath, projectPath) {
+  return resolveProjectPath(workspacePath, projectPath);
+}
