@@ -10,7 +10,7 @@ Open Game is moving toward an **end-to-end game build system** with a shared cor
 
 REA illustrates a useful shape for agent products: an MCP server exposes actionable tools, CLI workflows offer the same core capability outside an agent, and the matching skill teaches the model when and how to use them. REA's providers/adapters connect that shared workflow to different analysis engines. [REA explains the MCP + CLI workflow](https://github.com/morluto/rea#how-rea-works) and documents a separate skill-only install path in its [installation guide](https://github.com/morluto/rea/blob/main/docs/installation.md).
 
-REA's valuable pattern is its distribution of one domain workflow through an agent skill, MCP, and CLI, with adapters for specialized tools. Open Game uses that pattern for a different job: moving from intent to source files and a downloadable game. The first browser racing adapter now proves that end-to-end path for a bounded original game.
+REA's valuable pattern is its distribution of one domain workflow through an agent skill, MCP, and CLI, with adapters for specialized tools. Open Game uses that pattern for a different job: moving from intent to source files and a downloadable game. The browser racing example demonstrates how an adapter can fit into the workflow. It is deliberately separate from the arbitrary-game path: the connected LLM implements each creator’s requested game in the fitting engine.
 
 ## Target architecture
 
@@ -52,7 +52,7 @@ The skill teaches coding agents the creator workflow, originality expectations, 
 
 ### CLI and MCP
 
-CLI and MCP are thin transports around shared core operations. They must not implement separate game logic. CLI is useful for scripted workflows and manual project work; MCP makes the same operations available as model-callable tools. MCP operations should be composable and stateful: create/update a project, add or change a system, generate an implementation milestone, run an engine build, package a target, inspect errors, and continue. MCP results should report exact changes and build artifacts. A one-shot `generate_entire_game` tool would hide failure states and overpromise.
+CLI and MCP are thin transports around shared core operations. They must not implement separate game logic. CLI is useful for scripted workflows and manual project work; MCP makes the same operations available as model-callable tools. MCP operations should be composable and stateful: create/update a project, add or change a system, generate an implementation milestone, run an engine build, package a target, inspect errors, and continue. MCP results should report exact changes and build artifacts. MCP tools should preserve and update the project handoff; the coding LLM must do the actual game implementation. A one-shot template selector would misrepresent arbitrary creation.
 
 ### Shared core
 
@@ -76,14 +76,13 @@ The release pipeline produces the engine source plus platform-specific downloada
 
 The repo currently contains:
 
-- A static browser Studio for creating and exporting a game blueprint.
-- A shared Node core for blueprint normalization, project scaffolds with resumable production status, connected system updates, and dependency-ordered full production-roadmap planning.
-- A CLI entry point for running the Studio, creating a project from a blueprint, editing systems, inspecting, planning, building a playable race game, packaging an exported project from any engine, and launching the race multiplayer server.
-- An MCP server exposing project creation, system addition, the full production roadmap, blueprint reading, a limited originality signal scan, playable racing generation, and generic ZIP packaging for engine exports.
-- Browser racing and top-down open-world adventure adapters that produce editable playable game folders and ZIPs; racing includes optional server-authoritative WebSocket rooms.
-- An agent skill for implementing the resulting game in the user's chosen repository and engine.
+- A static Blueprint Studio for capturing and exporting a game brief.
+- A shared Node core for versioned blueprints, safe project scaffolds, asset provenance, resumable status, connected systems, and dependency-ordered production planning.
+- A CLI and MCP interface over those project operations, plus a generic ZIP packager for an already exported game.
+- One bounded browser racing example adapter. It demonstrates a possible genre-specific adapter; it is not an arbitrary game generator.
+- An Open Game Creator skill and generated `AGENTS.md` handoff that tell the connected coding LLM to implement the creator’s actual brief, characters, engine project, requested systems, build, and download.
 
-The adapters generate bounded browser games; they do not generate Godot/Unity/Unreal scenes, native desktop/mobile binaries, studio-scale worlds, deep authored campaigns, matchmaking, hosted infrastructure, or production anti-cheat. The generic package operation archives an engine's exported files but does not compile them. Together they provide real prompt-to-playable-download paths for two genres, not arbitrary AAA generation.
+The connected LLM authors the game code. The repo does not contain a model, arbitrary engine generator, universal compiler, native exporters, asset-generation pipeline, or production multiplayer hosting. The generic package operation archives existing files but does not compile them. Open Game is designed as the reusable agent workflow and project handoff that lets a user’s coding agent build different original games; it does not make a short prompt instantly equal a finished AAA studio release.
 
 ## Safety and project boundaries
 
@@ -98,7 +97,7 @@ The adapters generate bounded browser games; they do not generate Godot/Unity/Un
 
 1. Expand schema validation and add blueprint migrations as the data model grows.
 2. Keep Studio, CLI, and MCP on the same core operations.
-3. Improve the racing adapter with deeper career progression, expanded saved profiles, richer circuits, weather, damage, and content authoring.
+3. Improve the agent handoff so the coding LLM can preserve complete user briefs, character rosters, system dependencies, and engine/build evidence across longer projects.
 4. Add repeatable game iteration with change tracking so regeneration does not erase creator edits.
 5. Harden multiplayer deployment, reconnection, private rooms, and operational documentation before public hosting.
-6. Add a second genre/engine adapter; do not describe the racing template as a universal game compiler.
+6. Add engine and build adapters as optional capabilities, without describing any one example as a universal game compiler.

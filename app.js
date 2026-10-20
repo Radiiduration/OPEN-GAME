@@ -28,9 +28,9 @@ function collectBlueprint() {
   const tone = document.querySelector('#tone').value;
   const scopeNames = { focused: 'Focused', expansive: 'Expansive', epic: 'Epic' };
   const scopePlan = {
-    focused: ['Playable core loop', 'One polished region', 'One complete progression arc'],
-    expansive: ['Playable core loop and signature activity', 'One dense region with systemic world events', 'Career, character, and progression loops', 'Expansion plan for additional regions and content'],
-    epic: ['Core loop and one vertical-slice region', 'System dependency map and technical risk pass', 'Phased content plan with team and production assumptions', 'Expansion gates for additional regions, stories, and modes']
+    focused: ['Playable core loop', 'One polished level or play space', 'One complete progression arc'],
+    expansive: ['Playable core loop and signature activity', 'Representative levels with systemic events', 'Character, challenge, and progression loops', 'Expansion plan for additional content'],
+    epic: ['Core loop and one vertical-slice environment', 'System dependency map and technical risk pass', 'Phased content plan with production assumptions', 'Expansion gates for additional levels, stories, and modes']
   };
   return {
     format: 'open-game-blueprint',
@@ -38,12 +38,10 @@ function collectBlueprint() {
     createdAt: new Date().toISOString(),
     game: {
       title, pitch, coreExperience: genre, tone, ambition: scopeNames[scope], originality: 'Original expression, world, characters, story, visual identity, audio, and implementation.',
-      playerName: document.querySelector('#playerName').value.trim() || 'Racer',
-      teamName: document.querySelector('#teamName').value.trim() || 'Open Team',
-      rivalNames: document.querySelector('#rivalNames').value.split(',').map(name => name.trim()).filter(Boolean).slice(0, 7),
-      trackName: document.querySelector('#trackName').value.trim() || 'Coastal Grand Circuit',
-      trackLengthKm: Math.min(20, Math.max(1, Number(document.querySelector('#trackLengthKm').value) || 4.2)),
-      raceLaps: Math.min(12, Math.max(1, Math.round(Number(document.querySelector('#raceLaps').value) || 3))),
+      targetPlatform: document.querySelector('#targetPlatform').value,
+      multiplayer: document.querySelector('#multiplayerNeeds').value.trim(),
+      world: document.querySelector('#worldDetails').value.trim(),
+      characters: document.querySelector('#characterRoster').value.split('\n').map(line => line.trim()).filter(Boolean).map(line => { const [name, ...description] = line.split('—'); return { name: name.trim(), description: description.join('—').trim() }; }),
       accentColor: '#df4b36'
     },
     systems: selected.map((name, index) => ({ id: `system-${index + 1}`, name, status: 'planned' })),
@@ -123,12 +121,10 @@ document.querySelector('#saveButton').addEventListener('click', () => {
     pitch: document.querySelector('#gamePitch').value,
     genre: document.querySelector('#genre').value,
     tone: document.querySelector('#tone').value,
-    playerName: document.querySelector('#playerName').value,
-    teamName: document.querySelector('#teamName').value,
-    rivalNames: document.querySelector('#rivalNames').value,
-    trackName: document.querySelector('#trackName').value,
-    trackLengthKm: document.querySelector('#trackLengthKm').value,
-    raceLaps: document.querySelector('#raceLaps').value,
+    characters: document.querySelector('#characterRoster').value,
+    world: document.querySelector('#worldDetails').value,
+    targetPlatform: document.querySelector('#targetPlatform').value,
+    multiplayer: document.querySelector('#multiplayerNeeds').value,
     scope,
     selected: [...document.querySelectorAll('#systemList input[type="checkbox"]')].map(input => ({ value: input.value, checked: input.checked }))
   };
@@ -180,12 +176,10 @@ function loadDraft() {
     document.querySelector('#gamePitch').value = draft.pitch || '';
     document.querySelector('#genre').value = draft.genre || document.querySelector('#genre').options[0].value;
     document.querySelector('#tone').value = draft.tone || document.querySelector('#tone').options[0].value;
-    document.querySelector('#playerName').value = draft.playerName || 'Racer';
-    document.querySelector('#teamName').value = draft.teamName || 'Open Team';
-    document.querySelector('#rivalNames').value = draft.rivalNames || 'Mika Vale, Tomas Reed, Aya Nakamura, Luca Serrano, Nia Brooks';
-    document.querySelector('#trackName').value = draft.trackName || 'Coastal Grand Circuit';
-    document.querySelector('#trackLengthKm').value = draft.trackLengthKm || '4.2';
-    document.querySelector('#raceLaps').value = draft.raceLaps || '3';
+    document.querySelector('#characterRoster').value = draft.characters || '';
+    document.querySelector('#worldDetails').value = draft.world || '';
+    document.querySelector('#targetPlatform').value = draft.targetPlatform || document.querySelector('#targetPlatform').options[0].value;
+    document.querySelector('#multiplayerNeeds').value = draft.multiplayer || 'Single-player unless the game brief requests otherwise.';
     scope = draft.scope || 'expansive';
     scopeButtons.forEach(button => button.classList.toggle('selected', button.dataset.scope === scope));
     for (const saved of draft.selected || []) {

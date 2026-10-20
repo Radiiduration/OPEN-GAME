@@ -1,6 +1,6 @@
 # Use Open Game with a coding LLM
 
-Open Game is meant to travel with a coding agent. Its end-to-end target is prompt → editable source project → engine build → downloadable playable game. The repo provides the workflow, game project tools, and a first working browser racing adapter; the coding agent supplies the model and repository access. Other genres and engines need their own adapters or direct LLM implementation.
+Open Game is meant to travel with a coding agent. Its end-to-end target is prompt → editable source project → engine build → downloadable playable game. The repo provides agent instructions, a project brief/character handoff, planning tools, and a bounded browser racing example; the coding agent supplies the model and writes the requested game. The example is not the generator. Other genres are implemented directly by the connected LLM in the fitting engine.
 
 ## Load the project
 
@@ -10,7 +10,7 @@ If the agent supports project instructions but not skill discovery, give it both
 
 ## Give it a game vision
 
-Give one complete brief describing what you want in your own words. Strong briefs include the player fantasy, genre blend, important systems, tone, target platform, multiplayer needs, and what makes the world original. The initial prompt authorizes the full implementation and packaging workflow; you do not need to specify every technical detail or re-prompt between milestones.
+Give one complete brief describing what you want in your own words. Strong briefs include the player fantasy, genre blend, your characters and their roles, world/story details, important systems, tone, target platform, multiplayer needs, and what makes the game original. The initial prompt authorizes the full implementation and packaging workflow; you do not need to specify every technical detail or re-prompt between milestones.
 
 Example:
 
@@ -22,7 +22,7 @@ Example:
 2. Record the full vision, original identity, system connections, assumptions, and staged plan.
 3. Choose an engine with a real build path and write the entire requested system set plus dependency order into the production plan.
 4. Create or modify real, editable engine project files; implement a connected playable slice, then continue implementing the remaining requested systems and authored content.
-5. For racing, use the included browser adapter as a playable base and expand its editable output. For other genres, do not pass the brief through the racing template; build the appropriate source project directly or add a matching adapter.
+5. Use the included browser adapter only when the requested game is actually a browser racing game. For every other request, do not pass the brief through that template: implement the appropriate source project directly in the selected engine.
 6. Include the requested multiplayer package, authority/session model, reconnect behavior, and deployment setup.
 7. Build, repair, package, and launch where tools allow. Keep `OPEN_GAME_STATUS.md` current so interrupted work resumes at the next unchecked criterion. State exactly what was verified and any concrete blocker.
 

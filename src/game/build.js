@@ -1,11 +1,10 @@
 import path from 'node:path';
-import { lstat, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { copyFile, lstat, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { assessOriginality, normalizeBlueprint, resolveWorkspaceDestination } from '../core/project.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const template = path.join(here, 'template');
-const adventureTemplate = path.join(here, 'adventure');
 
 function crc32(buf) {
   let c = 0xffffffff;
@@ -33,7 +32,12 @@ async function collectFiles(directory, base = '') {
   }
   return output;
 }
-function safeJson(value) { return JSON.stringify(value).replace(/</g, '\\u003c'); }
+async function includeCreatorBundle(projectDir, outputDir) {
+  for (const [source, target] of [['docs/GAME_DESIGN.md', 'GAME_DESIGN.md'], ['docs/MILESTONES.md', 'PRODUCTION_PLAN.md'], ['assets/ASSET_LEDGER.csv', 'ASSET_LEDGER.csv']]) {
+    try { await copyFile(path.join(projectDir, source), path.join(outputDir, target)); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  }
+  await writeFile(path.join(outputDir, 'AGENTS.md'), `# Game project agent instructions\n\nRead GAME_BRIEF.md when present, GAME_BLUEPRINT.json, GAME_DESIGN.md, and PRODUCTION_PLAN.md before changing this game. Treat the creator brief as the destination. The included adapter is a playable starting point, not the complete game. Implement the requested systems as connected, editable engine code; build and run the project where the toolchain permits; fix failures; and update the production plan and progress notes with verified results. Do not claim unimplemented multiplayer, content, or platform builds. Use original or properly licensed creative material and preserve its source and license in ASSET_LEDGER.csv.\n`);
+}
 
 export async function packageGameDownload({ workspacePath = process.cwd(), projectPath, outputPath }) {
   if (!projectPath || !outputPath) throw new Error('Both projectPath and outputPath are required.');
@@ -61,8 +65,7 @@ export async function buildGame({ workspacePath = process.cwd(), projectPath, ou
   const blueprint = normalizeBlueprint(JSON.parse(await readFile(path.join(projectDir, 'open-game.json'), 'utf8')));
   const originalityReview = assessOriginality(blueprint);
   const isRace = /(race|racing|motorsport|formula|circuit|driving)/i.test(blueprint.game.coreExperience);
-  const isAdventure = /(open.world|action|adventure|role.play|\brpg\b|survival|sandbox|exploration|city)/i.test(blueprint.game.coreExperience);
-  if (!isRace && !isAdventure) throw new Error(`No built-in adapter matches "${blueprint.game.coreExperience}" yet. Use the Open Game Creator workflow to implement a matching engine project, then package its export with "open-game package".`);
+  if (!isRace) throw new Error(`The built-in browser adapter is a racing example and does not match "${blueprint.game.coreExperience}". Use your coding agent and the Open Game Creator workflow to implement the requested game in its target engine, then package the exported folder with "open-game package".`);
   const outputDir = await resolveWorkspaceDestination(workspacePath, outputPath);
   const zipPath = `${outputDir}.zip`;
   for (const target of [outputDir, zipPath]) {
@@ -71,24 +74,15 @@ export async function buildGame({ workspacePath = process.cwd(), projectPath, ou
   }
   await mkdir(path.dirname(outputDir), { recursive: true });
   await mkdir(outputDir, { recursive: false });
-  if (!isRace) {
-    for (const name of ['index.html', 'game.css', 'game.js']) await writeFile(path.join(outputDir, name), await readFile(path.join(adventureTemplate, name)));
-    const config = { title: blueprint.game.title, pitch: blueprint.game.pitch, playerName: blueprint.game.playerName || 'Wayfarer', accentColor: blueprint.game.accentColor };
-    await writeFile(path.join(outputDir, 'game-config.js'), `window.OPEN_GAME_CONFIG=${safeJson(config)};\n`);
-    await writeFile(path.join(outputDir, 'README.md'), `# ${blueprint.game.title}\n\n${blueprint.game.pitch}\n\n## Play\n\nOpen \`index.html\` in a desktop browser. Explore the original top-down coastal district with WASD or arrow keys, Shift to sprint, E to talk or complete an objective, and F to enter/exit the parked car. Accept three contracts, travel to their markers, and earn persistent reputation. Progress is saved in this browser.\n\nThis is an editable 2D adventure foundation, not a finished AAA open world. Extend the world, missions, characters, traversal, and multiplayer in the source files.\n\n## Originality\n\nAll included locations, characters, and placeholder content are original to this template. Review ORIGINALITY_REVIEW.md, record third-party asset sources and licenses, and replace placeholders with original or properly licensed material. Open Game cannot certify legal safety.\n`);
-    const matches = originalityReview.matches.map(match => `- ${match.reference} in ${match.field}`).join('\n');
-    const notes = originalityReview.notes.map(note => `- ${note}`).join('\n');
-    await writeFile(path.join(outputDir, 'ORIGINALITY_REVIEW.md'), `# Originality review signals\n\n**Status: ${originalityReview.status}**\n\n${matches || 'The lightweight scan found no configured reference patterns in selected blueprint text. This does not establish originality or non-infringement.'}\n\n## Limits\n\n${notes}\n`);
-    const files = await collectFiles(outputDir);
-    await writeFile(zipPath, zipBuffer(files));
-    return { game: blueprint.game.title, adapter: 'browser-open-world-adventure', playableFolder: outputDir, downloadZip: zipPath, files: files.length, originalityReview };
-  }
   for (const name of ['index.html', 'game.css', 'game.js']) await writeFile(path.join(outputDir, name), await readFile(path.join(template, name)));
   await writeFile(path.join(outputDir, 'race-sim.js'), await readFile(path.join(here, 'race-sim.js')));
   const rivals = blueprint.game.rivalNames.length ? blueprint.game.rivalNames : ['Mika Vale', 'Tomas Reed', 'Aya Nakamura', 'Luca Serrano', 'Nia Brooks'];
   const rivalTeams = ['Northstar Motorsport', 'Copperline Racing', 'Asterion GP', 'Solstice Works'];
   const config = { title: blueprint.game.title, pitch: blueprint.game.pitch, teamName: blueprint.game.teamName, playerName: blueprint.game.playerName, trackName: blueprint.game.trackName, trackLengthKm: blueprint.game.trackLengthKm, laps: blueprint.game.raceLaps, accentColor: blueprint.game.accentColor, rivals, rivalTeams };
   await writeFile(path.join(outputDir, 'game-config.js'), `window.OPEN_GAME_CONFIG=${safeJson(config)};\n`);
+  await writeFile(path.join(outputDir, 'GAME_BLUEPRINT.json'), `${JSON.stringify(blueprint, null, 2)}\n`);
+  try { await writeFile(path.join(outputDir, 'GAME_BRIEF.md'), await readFile(path.join(projectDir, 'GAME_BRIEF.md'))); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  await includeCreatorBundle(projectDir, outputDir);
   await mkdir(path.join(outputDir, 'multiplayer'));
   await writeFile(path.join(outputDir, 'multiplayer', 'server.cjs'), await readFile(path.join(here, 'multiplayer-server.cjs')));
   await writeFile(path.join(outputDir, 'multiplayer', 'race-sim.js'), await readFile(path.join(here, 'race-sim.js')));
@@ -100,5 +94,5 @@ export async function buildGame({ workspacePath = process.cwd(), projectPath, ou
   await writeFile(path.join(outputDir, 'ORIGINALITY_REVIEW.md'), `# Originality review signals\n\n**Status: ${originalityReview.status}**\n\n${matches ? `The lightweight text scan found these reference terms:\n\n${matches}\n\nReview these fields and replace franchise references with a distinct creative brief before release.` : 'The lightweight text scan found no configured franchise reference patterns in selected blueprint fields. This does not establish originality or non-infringement.'}\n\n## Limits\n\n${notes}\n`);
   const files = await collectFiles(outputDir);
   await writeFile(zipPath, zipBuffer(files));
-  return { game: blueprint.game.title, playableFolder: outputDir, downloadZip: zipPath, files: files.length, multiplayer: path.join(outputDir, 'multiplayer'), originalityReview };
+  return { game: blueprint.game.title, adapter: 'browser-racing', playableFolder: outputDir, downloadZip: zipPath, files: files.length, multiplayer: path.join(outputDir, 'multiplayer'), originalityReview };
 }

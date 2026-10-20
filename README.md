@@ -10,11 +10,11 @@ Open Game does not make or market unofficial copies of specific commercial games
 
 ## The ambition
 
-The target is a creator workflow for games with the depth people expect from major racing and open-world experiences, while giving every project its own identity. A creator might want career motorsport with vehicle setup, rivalries, weather, and a living paddock, or an open-world action game with an original city, driving, characters, missions, and emergent encounters. Those are genre-level ambitions; Open Game helps invent new expression, worlds, and identities.
+The target is a creator workflow for games with the depth people expect from major racing and open-world experiences, while giving every project its own identity. A creator might want career motorsport with vehicle setup, rivalries, weather, and a living paddock, or an original role-playing world with combat, characters, missions, and emergent encounters. Those are genre-level ambitions; Open Game helps invent new expression, worlds, and identities.
 
 Games at this scale take teams, time, iteration, and a capable engine. Open Game will not pretend a prompt can instantly produce a finished AAA game. It will make ambitious projects more achievable by decomposing them into coherent designs, reusable systems, playable vertical slices, production milestones, and progressively richer builds.
 
-**The intended end product is a downloadable game.** A creator supplies an original brief to a coding LLM with this repo available. The agent uses Open Game's workflow and tools to turn that brief into editable project files, implement connected systems, build and package for a target platform, and iterate from play feedback. The repo includes browser racing and top-down open-world adventure adapters that generate playable game folders and ZIP downloads. They are real genre foundations, not instant AAA games or studio-scale open worlds.
+**The intended end product is a downloadable game.** A creator supplies an original brief to a coding LLM with this repo available. The agent uses Open Game's workflow and tools to turn that brief into editable project files, implement connected systems, build and package for a target platform, and iterate from play feedback. The repo is an agent layer: the connected LLM interprets each creator’s brief and writes the actual game in the appropriate engine. Open Game stores the brief and production state, teaches the agent how to implement and verify the whole requested project, and provides structured project tools. It does not route arbitrary prompts into canned game templates.
 
 ## Product direction
 
@@ -31,9 +31,9 @@ The repo combines an agent-facing **Open Game Creator** skill, a visual **Game B
 
 ### Current working build
 
-Install dependencies with `npm install`, then run `npm run studio` and open the local URL printed in the terminal. Describe the experience, set your driver/team/rivals/track, select systems and ambition, save a draft, or export a JSON blueprint.
+Install dependencies with `npm install`, then run `npm run studio` and open the local URL printed in the terminal. Describe the game, add your characters and world details, choose a target platform and multiplayer scope, select systems, save a draft, or export a JSON blueprint.
 
-The racing adapter generates a standalone browser racer with AI rivals, vehicle setup, career progress, and optional WebSocket rooms. The adventure adapter generates an original top-down coastal district with exploration, contacts, sequential contracts, a map, sprint energy, and saved reputation. Both produce editable folders and ZIP downloads. They are playable foundations, not native binaries or AAA games. A small phrase scan flags selected franchise references for review; it does not inspect assets or code and cannot establish legal safety.
+The Studio currently captures a game brief and exports a blueprint. One bounded browser racing example demonstrates how a genre adapter can work; it is not the product’s game generator and must only be used for a matching racing request. For other genres and richer targets, the connected coding agent implements the actual game in its chosen engine. The phrase scan flags selected names in blueprint text for human review; it does not inspect assets or code and cannot establish legal safety.
 
 ### CLI
 
@@ -48,7 +48,7 @@ node src/cli/main.js build --project ./my-game --output ./dist/my-game
 node src/cli/main.js package --project ./engine-project/build --output ./dist/download.zip
 ```
 
-Project paths are confined to the current working directory. The generated project includes a versioned `open-game.json`, game design document, full milestone plan, persistent build status, and asset provenance ledger. `build` creates `./dist/my-game/` and `./dist/my-game.zip` for the racing adapter. `package` zips an existing export from any engine; it packages files but does not compile them.
+`create` makes a design and production handoff from a prepared blueprint. The connected coding agent then implements the requested game in real project files. `build` runs only the bounded browser racing example; `package` zips an existing engine export but does not compile it. Project paths are confined to the current working directory.
 
 To build the included original racing example from end to end, use `examples/coastal-grand-prix.json`:
 
@@ -69,7 +69,7 @@ Players open the generated `index.html`, choose Online Lobby, and connect to `ws
 
 ### MCP server
 
-Run `npm run mcp` as a local stdio MCP server. Set `OPEN_GAME_WORKSPACE` to the directory where generated game project folders may be created. The MCP tools create a design scaffold and persistent build handoff, add a system, return the complete dependency-ordered production roadmap plus first-slice acceptance criteria, read the blueprint, run a narrow originality signal scan, build the playable browser racing package, and package an exported game from any engine as a ZIP. The generic package tool packages existing files; compilation and launch verification remain engine-specific agent tasks.
+Run `npm run mcp` as a local stdio MCP server. Set `OPEN_GAME_WORKSPACE` to the directory where generated game project folders may be created. MCP exposes project creation, system planning, blueprint reading, a bounded racing example build, a narrow originality signal scan, and generic ZIP packaging. The connected LLM performs game design and engine implementation; no MCP call pretends to create a complete arbitrary game on its own. Compilation and launch verification remain engine-specific agent tasks.
 
 See [MCP setup](docs/mcp-setup.md) for the connection configuration and tool list. The overall design is described in [platform architecture](docs/architecture.md). The [working-model drawing](docs/open-game-working-model.svg) shows the prompt-to-build loop.
 
@@ -77,9 +77,9 @@ See [MCP setup](docs/mcp-setup.md) for the connection configuration and tool lis
 
 Load this repository in a coding agent, open the folder where you want the game source created, and give one complete brief describing the experience, target platform, and multiplayer needs. `AGENTS.md` routes the agent to the Open Game Creator skill. It treats that brief as the full job: preserve the destination, build and package the real game project, verify the build, and continue beyond the first playable milestone. For work that spans sessions, it records progress in `OPEN_GAME_STATUS.md` so the same brief does not need to be repeated.
 
-Example prompt: “Create an original open-world driving adventure for desktop. Give it a distinct coastal setting, responsive vehicle handling, exploration, rival crews, story missions, progression, save/load, and online co-op. Build the project in this folder, make it playable, package it, and keep implementing the requested systems until they are working. Use original names, world, art direction, and content.”
+Example prompt: “Create a third-person action RPG for Windows. Use my original characters and the setting notes I provide. Build exploration, combat, dialogue, quests, companion behavior, progression, saves, and online co-op as connected systems. Pick the engine that fits, build and package a playable project, and continue implementing the full brief beyond the first slice. Keep my characters and use original world details, art direction, and content.”
 
-The LLM performs the creative coding; Open Game provides its workflow, project tools, and one browser-racing adapter. This repo does not contain an autonomous model, universal engine compiler, native exporters, or production multiplayer hosting. A one-prompt workflow means one brief starts an end-to-end agent task; it does not make studio-scale AAA scope instantly feasible. The agent must report what it actually built and verified, and preserve the remaining work and concrete blockers. Other genres and native targets require the coding agent to implement the matching engine project.
+The LLM performs the creative coding; Open Game provides the agent workflow, project handoff, planning tools, and one bounded browser-racing example adapter. This repo does not contain an autonomous model, universal engine compiler, native exporters, or production multiplayer hosting. A one-prompt workflow means one brief starts an end-to-end agent task; it does not make studio-scale AAA scope instantly feasible. The agent must report what it actually built and verified, and preserve the remaining work and concrete blockers. Other genres and native targets require the coding agent to implement the matching engine project.
 
 ## The problem
 

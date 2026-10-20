@@ -35,6 +35,11 @@ export function validateBlueprint(input) {
   assertString(game.coreExperience, 'Core experience', 100);
   assertString(game.tone, 'Game tone', 100);
   if (game.playerName !== undefined) assertString(game.playerName, 'Player name', 40);
+  if (game.targetPlatform !== undefined) assertString(game.targetPlatform, 'Target platform', 200);
+  if (game.multiplayer !== undefined) assertString(game.multiplayer, 'Multiplayer requirements', 2000);
+  if (game.world !== undefined) assertString(game.world, 'World and story details', 6000);
+  if (game.characters !== undefined && (!Array.isArray(game.characters) || game.characters.length > 100)) throw new Error('Characters must be an array with at most 100 entries.');
+  for (const [index, character] of (game.characters || []).entries()) { assertString(character?.name, `Character ${index + 1} name`, 100); if (character.description !== undefined && character.description.trim()) assertString(character.description, `Character ${index + 1} description`, 2000); }
   if (game.teamName !== undefined) assertString(game.teamName, 'Team name', 50);
   if (game.trackName !== undefined) assertString(game.trackName, 'Track name', 60);
   if (game.rivalNames !== undefined && (!Array.isArray(game.rivalNames) || game.rivalNames.length > 7)) throw new Error('Rival names must be an array with at most 7 names.');
@@ -76,10 +81,14 @@ export function normalizeBlueprint(input) {
       tone: input.game.tone.trim(),
       ambition: input.game.ambition || 'Expansive',
       originality: input.game.originality || 'Original expression, world, characters, story, visual identity, audio, and implementation.',
-      playerName: input.game.playerName || 'Racer',
-      teamName: input.game.teamName || 'Open Team',
+      targetPlatform: input.game.targetPlatform || 'Choose with the creator based on their brief and available toolchains.',
+      multiplayer: input.game.multiplayer || 'Follow the creator brief; do not assume multiplayer.',
+      world: input.game.world || '',
+      characters: Array.isArray(input.game.characters) ? input.game.characters.map(character => ({ name: character.name.trim(), description: character.description?.trim() || '', role: character.role?.trim() || '' })) : [],
+      playerName: input.game.playerName || 'Player',
+      teamName: input.game.teamName || '',
       rivalNames: Array.isArray(input.game.rivalNames) ? input.game.rivalNames.slice(0, 7).map(value => String(value).slice(0, 40)) : [],
-      trackName: input.game.trackName || 'Coastal Grand Circuit',
+      trackName: input.game.trackName || '',
       trackLengthKm: Number(input.game.trackLengthKm) || 4.2,
       raceLaps: Math.max(1, Math.min(12, Number(input.game.raceLaps) || 3)),
       accentColor: /^#[0-9a-f]{6}$/i.test(input.game.accentColor || '') ? input.game.accentColor : '#df4b36'
@@ -95,6 +104,7 @@ export function assessOriginality(input) {
   const fields = [
     ['game title', blueprint.game.title], ['game pitch', blueprint.game.pitch],
     ['core experience', blueprint.game.coreExperience], ['team name', blueprint.game.teamName],
+    ['creator character names', blueprint.game.characters.map(character => character.name).join(' ')],
     ['track name', blueprint.game.trackName], ['rival names', blueprint.game.rivalNames.join(' ')],
     ['system names', blueprint.systems.map(system => system.name).join(' ')]
   ];
@@ -140,7 +150,7 @@ function makeDesignDoc(blueprint) {
   const systemLines = blueprint.systems.length
     ? blueprint.systems.map(system => `- **${system.name}** — ${system.purpose}`).join('\n')
     : '- Add the first system that supports the core player experience.';
-  return `# ${game.title}\n\n## Game vision\n\n${game.pitch}\n\n- **Core experience:** ${game.coreExperience}\n- **Tone:** ${game.tone}\n- **Ambition:** ${game.ambition}\n\n## Original identity\n\n${game.originality}\n\nCreate original names, characters, locations, story, visual direction, interface, and assets. Record the source and license for third-party material. This document is a creative brief, not legal clearance.\n\n## Planned game systems\n\n${systemLines}\n\n## First playable slice\n\nBuild one small but polished part that proves the defining experience. Include one representative play space, the core activity, one meaningful progression result, and a world or character reaction. Keep the larger destination intact in this document and expand in milestones.\n\n## Current status\n\n- Project created from an Open Game blueprint.\n- Engine implementation: not generated yet.\n- Next: choose or inspect the target engine, then implement the core playable slice.\n`;
+  return `# ${game.title}\n\n## Game vision\n\n${game.pitch}\n\n- **Core experience:** ${game.coreExperience}\n- **Tone:** ${game.tone}\n- **Ambition:** ${game.ambition}\n- **Target platform:** ${game.targetPlatform}\n- **Multiplayer:** ${game.multiplayer}\n\n${game.world ? `## World, story & special rules\n\n${game.world}\n\n` : ''}${game.characters?.length ? `## Creator-provided characters\n\n${game.characters.map(character => `- **${character.name}** — ${character.description}${character.role ? ` Role: ${character.role}.` : ''}`).join('\n')}\n\n` : ''}## Original identity\n\n${game.originality}\n\nCreate original names, characters, locations, story, visual direction, interface, and assets. Record the source and license for third-party material. This document is a creative brief, not legal clearance.\n\n## Planned game systems\n\n${systemLines}\n\n## First playable slice\n\nBuild one small but polished part that proves the defining experience. Include one representative play space, the core activity, one meaningful progression result, and a world or character reaction. Keep the larger destination intact in this document and expand in milestones.\n\n## Current status\n\n- Project created from an Open Game blueprint.\n- Engine implementation: not generated yet.\n- Next: choose or inspect the target engine, then implement the core playable slice.\n`;
 }
 
 function makeMilestoneDoc(blueprint) {
@@ -151,14 +161,14 @@ function makeMilestoneDoc(blueprint) {
 }
 
 function makeStatusDoc(blueprint) {
-  return `# ${blueprint.game.title}: implementation status\n\n## Destination\n\n${blueprint.game.pitch}\n\n## Target\n\n- Engine/platform: not selected; inspect this environment and choose a buildable target.\n- Full requested systems: see [production plan](docs/MILESTONES.md).\n\n## Progress\n\n- Blueprint and production plan: created.\n- Engine implementation: not started.\n- Latest verified build: none.\n- Known external blockers: none identified yet.\n\n## Next concrete task\n\nInspect the repository and installed engine toolchains, select the actual game target, then implement and build the first playable milestone. After it works, continue through the remaining planned systems instead of stopping at the slice.\n\nUpdate this file with real evidence after each build; never mark an unrun build as verified.\n`;
+  return `# ${blueprint.game.title}: implementation status\n\n## Destination\n\n${blueprint.game.pitch}\n\n## Target\n\n- Requested platform: ${blueprint.game.targetPlatform}\n- Engine: not selected; inspect this environment and choose a buildable target.\n- Full requested systems: see [production plan](docs/MILESTONES.md).\n\n## Progress\n\n- Blueprint and production plan: created.\n- Engine implementation: not started.\n- Latest verified build: none.\n- Known external blockers: none identified yet.\n\n## Next concrete task\n\nInspect the repository and installed engine toolchains, select the actual game target, then implement and build the first playable milestone. After it works, continue through the remaining planned systems instead of stopping at the slice.\n\nUpdate this file with real evidence after each build; never mark an unrun build as verified.\n`;
 }
 
 function makeAssetLedger() {
   return 'asset_id,asset_name,creator_or_source,source_url,license,changes,project_usage,review_status\n';
 }
 
-export async function createGameProject({ workspacePath = process.cwd(), projectPath, blueprint }) {
+export async function createGameProject({ workspacePath = process.cwd(), projectPath, blueprint, creatorBrief = '' }) {
   if (!projectPath) throw new Error('projectPath is required.');
   const normalized = normalizeBlueprint(blueprint);
   const destination = await resolveProjectPath(workspacePath, projectPath);
@@ -166,12 +176,15 @@ export async function createGameProject({ workspacePath = process.cwd(), project
   await mkdir(path.join(destination, 'docs'));
   await mkdir(path.join(destination, 'assets'));
   await writeFile(path.join(destination, 'open-game.json'), `${JSON.stringify(normalized, null, 2)}\n`, { flag: 'wx' });
+  const agentInstructions = ['# Open Game project instructions', '', 'Read GAME_BRIEF.md first when present, then docs/GAME_DESIGN.md, docs/MILESTONES.md, and OPEN_GAME_STATUS.md.', 'The creator brief is the destination: implement this original game in the engine and target that best fit it. Use the creator’s specified characters and world.', 'Do not substitute a canned demo or stop after planning or a vertical slice; build, run, package, and continue through the requested systems where the environment permits.', 'Record exact verification and blockers in OPEN_GAME_STATUS.md. Use original or properly licensed assets and update assets/ASSET_LEDGER.csv.'].join('\n');
+  await writeFile(path.join(destination, 'AGENTS.md'), `${agentInstructions}\n`, { flag: 'wx' });
   await writeFile(path.join(destination, 'README.md'), `# ${normalized.game.title}\n\nOriginal game project created with Open Game.\n\n## Current state\n\nThis folder contains the full game vision, dependency-aware production roadmap, progress handoff, and asset ledger. The coding agent should use the original brief to implement the engine project, playable systems, and packaged build; the blueprint itself is not a playable game.\n\n## Design files\n\n- [Game design](docs/GAME_DESIGN.md)\n- [Full production plan](docs/MILESTONES.md)\n- [Implementation status and resume point](OPEN_GAME_STATUS.md)\n- [Asset provenance](assets/ASSET_LEDGER.csv)\n`, { flag: 'wx' });
   await writeFile(path.join(destination, 'docs', 'GAME_DESIGN.md'), makeDesignDoc(normalized), { flag: 'wx' });
+  if (creatorBrief) await writeFile(path.join(destination, 'GAME_BRIEF.md'), `${creatorBrief.trim()}\n`, { flag: 'wx' });
   await writeFile(path.join(destination, 'docs', 'MILESTONES.md'), makeMilestoneDoc(normalized), { flag: 'wx' });
   await writeFile(path.join(destination, 'assets', 'ASSET_LEDGER.csv'), makeAssetLedger(), { flag: 'wx' });
   await writeFile(path.join(destination, 'OPEN_GAME_STATUS.md'), makeStatusDoc(normalized), { flag: 'wx' });
-  return { projectPath: destination, blueprint: normalized, createdFiles: ['open-game.json', 'README.md', 'docs/GAME_DESIGN.md', 'docs/MILESTONES.md', 'OPEN_GAME_STATUS.md', 'assets/ASSET_LEDGER.csv'] };
+  return { projectPath: destination, blueprint: normalized, createdFiles: ['open-game.json', 'AGENTS.md', 'README.md', ...(creatorBrief ? ['GAME_BRIEF.md'] : []), 'docs/GAME_DESIGN.md', 'docs/MILESTONES.md', 'OPEN_GAME_STATUS.md', 'assets/ASSET_LEDGER.csv'] };
 }
 
 export async function readGameProject({ workspacePath = process.cwd(), projectPath }) {

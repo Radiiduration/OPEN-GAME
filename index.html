@@ -57,42 +57,39 @@
             <label class="field-label" for="gameTitle">WORKING TITLE</label>
             <input id="gameTitle" name="title" maxlength="48" value="Project Horizon" autocomplete="off" />
             <label class="field-label" for="gamePitch">WHAT DO YOU WANT PLAYERS TO FEEL?</label>
-            <textarea id="gamePitch" name="pitch" rows="3" maxlength="240">The rush of mastering a machine, building a reputation, and finding your own route through a huge living world.</textarea>
+            <textarea id="gamePitch" name="pitch" rows="3" maxlength="240">Describe the game you want to play: its core experience, world, systems, characters, and what makes it distinct.</textarea>
+            <label class="field-label" for="characterRoster">YOUR CHARACTERS <span class="soft-label">ONE PER LINE · NAME — DESCRIPTION</span></label>
+            <textarea id="characterRoster" rows="3" maxlength="6000" placeholder="Ari Sol — pilot and former rescue worker; impulsive but loyal"></textarea>
+            <label class="field-label" for="worldDetails">WORLD, STORY & SPECIAL RULES</label>
+            <textarea id="worldDetails" rows="3" maxlength="6000" placeholder="Describe the setting, story, key mechanics, and what makes this game yours."></textarea>
             <div class="field-row">
-              <div><label class="field-label" for="playerName">PLAYER / DRIVER</label><input id="playerName" maxlength="40" value="Racer" autocomplete="off" /></div>
-              <div><label class="field-label" for="teamName">YOUR TEAM</label><input id="teamName" maxlength="50" value="Open Team" autocomplete="off" /></div>
+              <div><label class="field-label" for="targetPlatform">TARGET PLATFORM</label><select id="targetPlatform"><option>Choose the best fit</option><option>Windows PC</option><option>Mac</option><option>Linux</option><option>Web browser</option><option>Android</option><option>iOS</option><option>Multiple platforms</option><option>Other / agent decides</option></select></div>
+              <div><label class="field-label" for="genre">CORE EXPERIENCE</label><select id="genre" name="genre"><option>Open-world action</option><option>Racing simulation</option><option>Role-playing adventure</option><option>Survival crafting</option><option>Strategy simulation</option><option>Platform action</option><option>Horror exploration</option><option>Cooperative multiplayer</option><option>Something entirely new</option></select></div>
             </div>
-            <label class="field-label" for="trackName">SIGNATURE TRACK</label><input id="trackName" maxlength="60" value="Coastal Grand Circuit" autocomplete="off" />
+            <label class="field-label" for="multiplayerNeeds">MULTIPLAYER & ONLINE NEEDS</label><textarea id="multiplayerNeeds" rows="2" maxlength="2000" placeholder="Single-player, local co-op, online co-op, competitive, dedicated servers, or leave undecided.">Single-player unless the game brief requests otherwise.</textarea>
             <div class="field-row">
-              <div><label class="field-label" for="trackLengthKm">TRACK LENGTH <span class="soft-label">KM</span></label><input id="trackLengthKm" type="number" min="1" max="20" step="0.1" value="4.2" /></div>
-              <div><label class="field-label" for="raceLaps">RACE LAPS</label><input id="raceLaps" type="number" min="1" max="12" value="3" /></div>
-            </div>
-            <label class="field-label" for="rivalNames">RIVAL DRIVERS <span class="soft-label">COMMA SEPARATED · UP TO 7</span></label><input id="rivalNames" maxlength="250" value="Mika Vale, Tomas Reed, Aya Nakamura, Luca Serrano, Nia Brooks" autocomplete="off" />
-            <div class="field-row">
-              <div><label class="field-label" for="genre">CORE EXPERIENCE</label><select id="genre" name="genre"><option>Open-world motorsport</option><option>Open-world action adventure</option><option>Survival expedition</option><option>Fantasy role-playing</option><option>Science-fiction exploration</option><option>Something entirely new</option></select></div>
-              <div><label class="field-label" for="tone">TONE</label><select id="tone" name="tone"><option>Grounded & cinematic</option><option>Bold & stylized</option><option>Warm & adventurous</option><option>Gritty & tense</option><option>Dreamlike & strange</option></select></div>
-            </div>
-            <label class="field-label">HOW BIG SHOULD THE VISION BE?</label>
-            <div class="scope-select" role="group" aria-label="Project scope">
+              <div><label class="field-label" for="tone">TONE</label><select id="tone"><option>Grounded & cinematic</option><option>Bold & stylized</option><option>Warm & adventurous</option><option>Gritty & tense</option><option>Dreamlike & strange</option><option>Other / defined in brief</option></select></div>
+              <div><label class="field-label">HOW BIG SHOULD THE VISION BE?</label><div class="scope-select" role="group" aria-label="Project scope">
               <button type="button" data-scope="focused"><span class="scope-name">FOCUSED</span><span class="scope-desc">One deep experience</span></button>
               <button type="button" data-scope="expansive" class="selected"><span class="scope-name">EXPANSIVE</span><span class="scope-desc">A world of systems</span><span class="scope-tag">POPULAR</span></button>
               <button type="button" data-scope="epic"><span class="scope-name">EPIC</span><span class="scope-desc">A living universe</span></button>
+            </div></div>
             </div>
-            <div class="guardrail-note"><span>✳</span><p><strong>Make it unmistakably yours.</strong> We build from the experience you want—not another game's characters, setting, story, name, or assets.</p></div>
+            <div class="guardrail-note"><span>✳</span><p><strong>Make it unmistakably yours.</strong> Keep your own characters and creative direction. Broad genre inspiration is fine; use original expression and properly licensed material.</p></div>
             <button class="button button-primary generate-button" type="submit">Build my game blueprint <span>↗</span></button>
           </form>
 
           <aside class="systems-panel">
-            <div class="panel-heading"><span class="panel-number">02</span><div><h3>Choose the systems</h3><p>Big games feel alive because their parts talk to each other.</p></div></div>
+            <div class="panel-heading"><span class="panel-number">02</span><div><h3>Choose the systems</h3><p>Connect the mechanics this game actually needs.</p></div></div>
             <div class="systems-summary"><span>CONNECTED SYSTEMS</span><span id="systemCount">08 SELECTED</span></div>
             <div class="system-list" id="systemList">
-              <label class="system-card checked"><input type="checkbox" value="Living open world" checked /><span class="system-icon">◉</span><span class="system-copy"><strong>Living open world</strong><small>Regions, discovery, changing conditions</small></span><span class="system-check">✓</span></label>
-              <label class="system-card checked"><input type="checkbox" value="Deep vehicle & movement model" checked /><span class="system-icon">⌁</span><span class="system-copy"><strong>Deep vehicle & movement model</strong><small>Handling, tuning, damage, feel</small></span><span class="system-check">✓</span></label>
-              <label class="system-card checked"><input type="checkbox" value="Career & reputation" checked /><span class="system-icon">↗</span><span class="system-copy"><strong>Career & reputation</strong><small>Choices shape access and standing</small></span><span class="system-check">✓</span></label>
-              <label class="system-card checked"><input type="checkbox" value="Mission & event builder" checked /><span class="system-icon">⌖</span><span class="system-copy"><strong>Mission & event builder</strong><small>Designed beats plus emergent play</small></span><span class="system-check">✓</span></label>
-              <label class="system-card checked"><input type="checkbox" value="Dynamic characters & rivals" checked /><span class="system-icon">✳</span><span class="system-copy"><strong>Dynamic characters & rivals</strong><small>Relationships, memory, competing goals</small></span><span class="system-check">✓</span></label>
-              <label class="system-card checked"><input type="checkbox" value="World simulation" checked /><span class="system-icon">◌</span><span class="system-copy"><strong>World simulation</strong><small>Time, weather, traffic, local activity</small></span><span class="system-check">✓</span></label>
-              <label class="system-card checked"><input type="checkbox" value="Progression & customization" checked /><span class="system-icon">⧉</span><span class="system-copy"><strong>Progression & customization</strong><small>Builds, skills, gear, meaningful unlocks</small></span><span class="system-check">✓</span></label>
+              <label class="system-card checked"><input type="checkbox" value="Player controls & camera" checked /><span class="system-icon">◉</span><span class="system-copy"><strong>Player controls & camera</strong><small>Movement, input, responsiveness</small></span><span class="system-check">✓</span></label>
+              <label class="system-card checked"><input type="checkbox" value="Core gameplay loop" checked /><span class="system-icon">⌁</span><span class="system-copy"><strong>Core gameplay loop</strong><small>The main actions and challenges</small></span><span class="system-check">✓</span></label>
+              <label class="system-card checked"><input type="checkbox" value="World & levels" checked /><span class="system-icon">↗</span><span class="system-copy"><strong>World & levels</strong><small>Spaces, discovery, changing conditions</small></span><span class="system-check">✓</span></label>
+              <label class="system-card checked"><input type="checkbox" value="Missions & activities" checked /><span class="system-icon">⌖</span><span class="system-copy"><strong>Missions & activities</strong><small>Objectives, events, emergent play</small></span><span class="system-check">✓</span></label>
+              <label class="system-card checked"><input type="checkbox" value="Characters & AI" checked /><span class="system-icon">✳</span><span class="system-copy"><strong>Characters & AI</strong><small>Behavior, relationships, competing goals</small></span><span class="system-check">✓</span></label>
+              <label class="system-card checked"><input type="checkbox" value="World simulation" checked /><span class="system-icon">◌</span><span class="system-copy"><strong>World simulation</strong><small>Rules, schedules, events, reactions</small></span><span class="system-check">✓</span></label>
+              <label class="system-card checked"><input type="checkbox" value="Progression & customization" checked /><span class="system-icon">⧉</span><span class="system-copy"><strong>Progression & customization</strong><small>Skills, gear, meaningful unlocks</small></span><span class="system-check">✓</span></label>
               <label class="system-card checked"><input type="checkbox" value="Story & player choice" checked /><span class="system-icon">⌘</span><span class="system-copy"><strong>Story & player choice</strong><small>Original cast, branching consequences</small></span><span class="system-check">✓</span></label>
             </div>
             <button class="add-system" id="addSystem" type="button">＋ Add another system</button>
@@ -103,11 +100,11 @@
       <section class="output-section" id="outputSection">
         <div class="output-top"><div><div class="eyebrow"><span class="eyebrow-line"></span> YOUR BUILD PLAN</div><h2 id="outputTitle">A world worth getting lost in.</h2></div><button class="button button-outline" id="exportButton">Export blueprint <span>↓</span></button></div>
         <div class="output-grid">
-          <article class="output-card vision-card"><span class="output-kicker">THE VISION</span><p id="outputPitch">Your game blueprint will take shape here.</p><div class="vision-tags"><span id="outputGenre">OPEN-WORLD MOTORSPORT</span><span id="outputTone">GROUNDED & CINEMATIC</span></div></article>
+          <article class="output-card vision-card"><span class="output-kicker">THE VISION</span><p id="outputPitch">Your game blueprint will take shape here.</p><div class="vision-tags"><span id="outputGenre">YOUR ORIGINAL GAME</span><span id="outputTone">GROUNDED & CINEMATIC</span></div></article>
           <article class="output-card"><span class="output-kicker">SYSTEMS IN THE WORLD</span><div id="outputSystems" class="output-system-list"><span>Build your blueprint to see the connected systems.</span></div></article>
-          <article class="output-card slice-card"><span class="output-kicker">FIRST PLAYABLE SLICE</span><h3>Make one small part feel complete.</h3><p>Start with one original region, one signature activity, one meaningful upgrade, and one character who reacts to the player's choices.</p><div class="slice-status"><span class="status-pulse"></span> READY TO SCOPE</div></article>
+          <article class="output-card slice-card"><span class="output-kicker">FIRST PLAYABLE SLICE</span><h3>Make one small part feel complete.</h3><p>Start with a representative play space, its defining gameplay loop, connected systems, and a character who reacts to player choices.</p><div class="slice-status"><span class="status-pulse"></span> READY TO SCOPE</div></article>
         </div>
-        <div class="reality-note"><span>↗</span><p><strong>Ambitious games are built in layers.</strong> Open Game's goal is to turn a big vision into a real, playable project—then grow it system by system. This blueprint is a planning artifact, not a finished game or a promise of one-click AAA production.</p></div>
+        <div class="reality-note"><span>↗</span><p><strong>Ambitious games are built in layers.</strong> Open Game gives your coding agent a structured handoff for the game you described. This blueprint is a plan; the connected LLM must still implement, build, package, and verify the actual game. It cannot promise instant AAA production.</p></div>
       </section>
     </main>
     <footer><a class="brand footer-brand" href="#top"><span class="brand-mark"><span></span><span></span><span></span></span><span>OPEN<span class="brand-light">GAME</span></span></a><span>YOUR WORLD. YOUR RULES. MAKE IT ORIGINAL.</span><a href="#studio">BACK TO THE STUDIO ↑</a></footer>

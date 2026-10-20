@@ -1,6 +1,6 @@
 # Connect the Open Game MCP server
 
-The MCP server runs locally over stdio. It exposes the same project operations as the Open Game core and CLI, including the browser racing game build adapter. It does not call a language model; the connected coding agent chooses tools and continues the editable game implementation.
+The MCP server runs locally over stdio. It exposes the same project operations as the Open Game core and CLI, including one bounded browser racing example adapter. It does not call a language model; the connected coding agent chooses tools and continues the editable game implementation.
 
 ## Prerequisites
 
@@ -28,12 +28,12 @@ Add a server entry to the MCP configuration supported by your coding agent. Use 
 
 Restart or reconnect the agent after changing its MCP configuration. The model should see these tools:
 
-- `create_game_project`: create a design scaffold from an original game brief.
+- `create_game_project`: save the creator’s original brief as a project scaffold. The connected coding agent then implements the game in the appropriate engine.
 - `add_game_system`: add a system with dependencies and shared inputs/outputs.
 - `plan_game_vertical_slice`: return the full production roadmap, dependency order, and first-slice acceptance criteria.
 - `read_game_blueprint`: load the current project contract for continued work.
-- `build_playable_game`: create an editable browser racing game folder and adjacent ZIP download from a project blueprint.
+- `build_playable_game`: create the included bounded browser racing example and adjacent ZIP from a matching blueprint. It is not a universal game generator.
 - `package_game_download`: package an exported source/build folder from any engine as a ZIP; this does not compile the project.
 - `review_game_originality`: flag a narrow set of commercial game name patterns in selected blueprint text for human review. This is not legal advice or a safety certificate.
 
-The server confines project paths to `OPEN_GAME_WORKSPACE`. Game project creation makes new folders; game builds also make new output folders and do not overwrite existing paths. The first build adapter targets browser play and local/friends WebSocket rooms. Other engines and production online infrastructure are separate future adapters.
+The server confines project paths to `OPEN_GAME_WORKSPACE`. Project creation, builds, and ZIP packaging make new output paths and do not overwrite existing files. The example adapter targets browser play and includes a LAN/friends WebSocket room demo. Other engines and production online infrastructure require additional adapters and implementation.

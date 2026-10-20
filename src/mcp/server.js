@@ -21,20 +21,19 @@ function createServer() {
 
   server.registerTool('create_game_project', {
     title: 'Create game project blueprint',
-    description: 'Create an original game project folder with a versioned blueprint, racing-game identity settings, design brief, milestones, and asset provenance ledger. Use build_playable_game afterward to create a playable browser racing game and downloadable ZIP.',
+    description: 'Create a project handoff from the creator’s original brief, characters, world, platform, and systems. The connected coding agent must implement the requested game in its chosen engine; this tool does not generate a playable game by itself.',
     inputSchema: {
       project_path: z.string().min(1).describe('New project folder path relative to the configured Open Game workspace.'),
+      creator_brief: z.string().max(20000).optional().describe('The complete original prompt, including requested experience, characters, world, systems, target platform, and multiplayer needs. Preserve this verbatim for the coding agent.'),
+      target_platform: z.string().max(200).optional(),
+      world: z.string().max(6000).optional(),
+      multiplayer: z.string().max(2000).optional(),
+      characters: z.array(z.object({ name: z.string().min(1).max(100), description: z.string().max(2000).default(''), role: z.string().max(100).default('') })).max(100).default([]),
       title: z.string().min(1).max(100),
       pitch: z.string().min(1).max(4000).describe('Original player experience and game vision.'),
       core_experience: z.string().min(1).max(100),
       tone: z.string().min(1).max(100),
       ambition: z.enum(['Focused', 'Expansive', 'Epic']).default('Expansive'),
-      player_name: z.string().min(1).max(40).default('Racer'),
-      team_name: z.string().min(1).max(50).default('Open Team'),
-      rival_names: z.array(z.string().min(1).max(40)).max(7).default([]),
-      track_name: z.string().min(1).max(60).default('Coastal Grand Circuit'),
-      track_length_km: z.number().min(1).max(20).default(4.2),
-      race_laps: z.number().int().min(1).max(12).default(3),
       accent_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#df4b36'),
       systems: z.array(z.object({ name: z.string().min(1).max(100), purpose: z.string().max(500).optional() })).max(40).default([])
     }
@@ -44,9 +43,8 @@ function createServer() {
         format: 'open-game-blueprint', version: 1, createdAt: new Date().toISOString(),
         game: {
           title: input.title, pitch: input.pitch, coreExperience: input.core_experience,
-          tone: input.tone, ambition: input.ambition,
-          playerName: input.player_name, teamName: input.team_name, rivalNames: input.rival_names,
-          trackName: input.track_name, trackLengthKm: input.track_length_km, raceLaps: input.race_laps, accentColor: input.accent_color,
+          tone: input.tone, ambition: input.ambition, targetPlatform: input.target_platform, multiplayer: input.multiplayer, world: input.world, characters: input.characters,
+          accentColor: input.accent_color,
           originality: 'Original expression, world, characters, story, visual identity, audio, and implementation.'
         },
         systems: input.systems.map((system, index) => ({ id: `system-${index + 1}`, ...system, status: 'planned' })),
@@ -57,7 +55,7 @@ function createServer() {
           'This blueprint is not legal clearance and cannot guarantee protection from legal claims.'
         ]
       };
-      return result(await createGameProject({ workspacePath, projectPath: input.project_path, blueprint }));
+      return result(await createGameProject({ workspacePath, projectPath: input.project_path, blueprint, creatorBrief: input.creator_brief }));
     } catch (error) { return failure(error); }
   });
 
@@ -101,8 +99,8 @@ function createServer() {
   });
 
   server.registerTool('build_playable_game', {
-    title: 'Build playable game download',
-    description: 'Generate an editable browser game and package it as a ZIP from a project blueprint. Built-in adapters support circuit racing with AI rivals and optional WebSocket rooms, and a top-down open-world adventure with exploration, contacts, contracts, and saved reputation. These are playable foundations, not AAA productions or legal clearance.',
+    title: 'Build playable browser game download',
+    description: 'Build the included browser racing example from a project blueprint. This is a bounded example adapter, not a universal game generator; for other genres, the connected coding agent implements the requested game in its engine using the project brief and production plan.',
     inputSchema: {
       project_path: z.string().min(1).describe('Existing Open Game project folder relative to the configured workspace.'),
       output_path: z.string().min(1).describe('New output folder path relative to the configured workspace. A .zip file is generated beside it.')

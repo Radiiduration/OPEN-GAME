@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title description">
   <title id="title">Open Game: from original idea to playable game</title>
-  <desc id="description">A game creator gives a brief to a coding LLM with the Open Game repository loaded. The repository provides a creator skill, originality guardrails, shared blueprint, MCP and CLI, and a browser racing game adapter. The result is a downloadable playable game and optional friend-hosted multiplayer server, which feed back into another development iteration.</desc>
+  <desc id="description">A game creator gives a brief to a coding LLM with the Open Game repository loaded. The repository provides a game-creation skill, originality guardrails, a shared project contract, and MCP and CLI tools. The connected coding LLM creates the requested game in an appropriate engine, packages it, and continues from play feedback.</desc>
   <defs>
     <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#34403d" opacity=".52"/></pattern>
     <linearGradient id="glow" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#bfe779" stop-opacity=".13"/><stop offset="1" stop-color="#58c7c5" stop-opacity=".02"/></linearGradient>
@@ -21,7 +21,7 @@
     <text x="43" y="31" class="mono tiny muted">CREATOR TOOLKIT / WORKING MODEL</text>
   </g>
   <text x="64" y="145" font-size="37" font-weight="750" letter-spacing="-1.7">From a big idea to a game you can play.</text>
-  <text x="66" y="174" class="small muted">A coding LLM uses Open Game as the workflow, project contract, game builder, and multiplayer starter.</text>
+  <text x="66" y="174" class="small muted">A coding LLM uses Open Game as its reusable game-creation workflow and project toolkit.</text>
 
   <!-- Step labels -->
   <g class="mono label">
@@ -34,9 +34,9 @@
   <rect x="64" y="243" width="250" height="260" rx="13" class="card"/>
   <rect x="64" y="243" width="250" height="5" rx="3" fill="#f18a69"/>
   <text x="86" y="280" class="mono tiny coral">YOUR ORIGINAL VISION</text>
-  <text x="86" y="317" font-size="20" font-weight="650">“Build a coastal</text>
-  <text x="86" y="342" font-size="20" font-weight="650">racing career for</text>
-  <text x="86" y="367" font-size="20" font-weight="650">my team and drivers.”</text>
+  <text x="86" y="317" font-size="20" font-weight="650">“Build my original</text>
+  <text x="86" y="342" font-size="20" font-weight="650">game with my</text>
+  <text x="86" y="367" font-size="20" font-weight="650">characters and ideas.”</text>
   <path d="M86 389H291" stroke="#35413b"/>
   <text x="86" y="415" class="small muted">Creator chooses the names,</text>
   <text x="86" y="435" class="small muted">world, tone, platform, and</text>
@@ -61,16 +61,16 @@
   <g>
     <rect x="399" y="332" width="212" height="64" rx="8" class="subcard"/>
     <text x="416" y="355" class="mono tiny lime">SKILL + GUARDRAILS</text>
-    <text x="416" y="377" class="tiny muted">name-pattern scan · review only</text>
+    <text x="416" y="377" class="tiny muted">originality guidance · no legal guarantee</text>
     <rect x="623" y="332" width="222" height="64" rx="8" class="subcard"/>
     <text x="640" y="355" class="mono tiny teal">SHARED PROJECT CORE</text>
-    <text x="640" y="377" class="tiny muted">versioned blueprint · project files</text>
+    <text x="640" y="377" class="tiny muted">brief · characters · system plan</text>
     <rect x="399" y="410" width="212" height="64" rx="8" class="subcard"/>
     <text x="416" y="433" class="mono tiny coral">MCP + CLI + STUDIO</text>
-    <text x="416" y="455" class="tiny muted">same operations, agent or human</text>
+    <text x="416" y="455" class="tiny muted">project tools for the LLM agent</text>
     <rect x="623" y="410" width="222" height="64" rx="8" class="subcard"/>
-    <text x="640" y="433" class="mono tiny lime">BROWSER RACING ADAPTER</text>
-    <text x="640" y="455" class="tiny muted">generates source · builds · ZIPs game</text>
+    <text x="640" y="433" class="mono tiny lime">ENGINE PROJECT</text>
+    <text x="640" y="455" class="tiny muted">LLM builds the requested game</text>
   </g>
 
   <!-- Arrow 2 -->
@@ -82,15 +82,15 @@
   <rect x="919" y="243" width="5" height="152" rx="3" fill="#72d4d0"/>
   <text x="943" y="278" class="mono tiny teal">DOWNLOADABLE ZIP</text>
   <text x="943" y="309" font-size="18" font-weight="700">Playable browser game</text>
-  <text x="943" y="338" class="tiny muted">AI grid · setup · race laps</text>
-  <text x="943" y="357" class="tiny muted">career reputation · saved profile</text>
-  <text x="943" y="376" class="tiny muted">editable HTML / CSS / JavaScript</text>
+  <text x="943" y="338" class="tiny muted">Systems match the creator brief</text>
+  <text x="943" y="357" class="tiny muted">Creator’s characters and world</text>
+  <text x="943" y="376" class="tiny muted">Editable source + target build</text>
 
   <rect x="919" y="411" width="219" height="92" rx="13" class="card"/>
   <rect x="919" y="411" width="5" height="92" rx="3" fill="#f18a69"/>
-  <text x="943" y="442" class="mono tiny coral">OPTIONAL SERVER</text>
-  <text x="943" y="468" font-size="16" font-weight="700">Friend-hosted multiplayer</text>
-  <text x="943" y="488" class="tiny muted">shared start · up to 8 drivers</text>
+  <text x="943" y="442" class="mono tiny coral">WHEN REQUESTED</text>
+  <text x="943" y="468" font-size="16" font-weight="700">Requested multiplayer systems</text>
+  <text x="943" y="488" class="tiny muted">lobbies · replication · deployment</text>
 
   <!-- Iteration loop -->
   <path d="M1030 516V570Q1030 592 1008 592H231Q209 592 209 571V517" fill="none" stroke="#77877d" stroke-width="1.7" stroke-dasharray="7 6" marker-end="url(#arrowMuted)"/>
@@ -100,6 +100,6 @@
   <text x="470" y="587" font-size="14" font-weight="700">Play → give feedback → LLM updates files → rebuild</text>
   <text x="470" y="606" class="tiny muted">Each loop grows the creator’s own game; it does not copy a franchise.</text>
 
-  <text x="65" y="660" class="mono tiny muted">FIRST ADAPTER: ORIGINAL RACING PROTOTYPE</text>
+  <text x="65" y="660" class="mono tiny muted">LLM-DRIVEN GAME CREATION WORKFLOW</text>
   <text x="1137" y="660" text-anchor="end" class="mono tiny muted">A STARTING POINT, NOT AAA IN ONE CLICK</text>
 </svg>

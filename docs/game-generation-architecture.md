@@ -4,7 +4,7 @@
 
 Open Game should help creators produce substantial, original, playable games. The system must preserve the creator's vision from concept through implementation, while turning ambitious scope into connected, testable milestones.
 
-The Studio exports a structured blueprint with original team/driver/track settings. The first generation adapter uses that input to emit a playable browser racing project and ZIP, plus an optional WebSocket room server. Keep the adapter scope explicit: it is a racing prototype, not an arbitrary game compiler.
+The Studio captures an arbitrary game vision, user-provided characters, world/story details, target platform, multiplayer needs, and systems in a structured blueprint. The connected coding LLM performs the actual design and engine implementation. The included browser racing adapter is only a bounded example and ZIP workflow, not an arbitrary game compiler.
 
 ## Core pipeline
 
@@ -132,7 +132,7 @@ The browser Studio in `index.html`, `app.css`, and `app.js` currently supports:
 - A structured JSON blueprint export.
 - Local draft saving in the browser.
 - A first playable-slice suggestion and originality reminders.
-- Custom driver, team, rival, track, track-length, and lap settings for the racing adapter.
+- Creator-provided characters, original world, target platform, multiplayer requirements, and custom system list for agent handoff.
 
 The current technical milestones are:
 
