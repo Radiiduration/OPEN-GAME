@@ -25,6 +25,7 @@ Example:
 5. Use the included browser adapter only when the requested game is actually a browser racing game. For every other request, do not pass the brief through that template: implement the appropriate source project directly in the selected engine.
 6. Include the requested multiplayer package, authority/session model, reconnect behavior, and deployment setup.
 7. Build, repair, package, and launch where tools allow. Keep `OPEN_GAME_STATUS.md` current so interrupted work resumes at the next unchecked criterion. State exactly what was verified and any concrete blocker.
+8. Use MCP `update_game_progress` after real build/implementation milestones and `read_game_progress` before resuming. These tools save verified systems, commands, artifacts, blockers, and the next task into the project handoff.
 
 ## What this workflow does not provide
 

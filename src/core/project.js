@@ -1,7 +1,9 @@
 import path from 'node:path';
-import { lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
+import { copyFile, lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 
 const FORMAT = 'open-game-blueprint';
+const openGameRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const REFERENCE_TERMS = [
   ['F1', /\bf1\b/i],
   ['Formula 1', /formula\s+one/i],
@@ -175,16 +177,25 @@ export async function createGameProject({ workspacePath = process.cwd(), project
   await mkdir(destination, { recursive: false });
   await mkdir(path.join(destination, 'docs'));
   await mkdir(path.join(destination, 'assets'));
+  const skillDirectory = path.join(destination, '.agents', 'skills', 'open-game-creator');
+  await mkdir(skillDirectory, { recursive: true });
+  await copyFile(path.join(openGameRoot, 'skills', 'open-game-creator', 'SKILL.md'), path.join(skillDirectory, 'SKILL.md'));
   await writeFile(path.join(destination, 'open-game.json'), `${JSON.stringify(normalized, null, 2)}\n`, { flag: 'wx' });
-  const agentInstructions = ['# Open Game project instructions', '', 'Read GAME_BRIEF.md first when present, then docs/GAME_DESIGN.md, docs/MILESTONES.md, and OPEN_GAME_STATUS.md.', 'The creator brief is the destination: implement this original game in the engine and target that best fit it. Use the creator’s specified characters and world.', 'Do not substitute a canned demo or stop after planning or a vertical slice; build, run, package, and continue through the requested systems where the environment permits.', 'Record exact verification and blockers in OPEN_GAME_STATUS.md. Use original or properly licensed assets and update assets/ASSET_LEDGER.csv.'].join('\n');
+  const agentInstructions = ['# Open Game project instructions', '', 'Read GAME_BRIEF.md first when present, then docs/GAME_DESIGN.md, docs/MILESTONES.md, and OPEN_GAME_STATUS.md. Follow `.agents/skills/open-game-creator/SKILL.md` for the complete production workflow.', 'The creator brief is the destination: implement this original game in the engine and target that best fit it. Use the creator’s specified characters and world.', 'Do not substitute a canned demo or stop after planning or a vertical slice; build, run, package, and continue through the requested systems where the environment permits.', 'Record exact verification and blockers in OPEN_GAME_STATUS.md and open-game-progress.json. Use original or properly licensed assets and update assets/ASSET_LEDGER.csv.'].join('\n');
   await writeFile(path.join(destination, 'AGENTS.md'), `${agentInstructions}\n`, { flag: 'wx' });
-  await writeFile(path.join(destination, 'README.md'), `# ${normalized.game.title}\n\nOriginal game project created with Open Game.\n\n## Current state\n\nThis folder contains the full game vision, dependency-aware production roadmap, progress handoff, and asset ledger. The coding agent should use the original brief to implement the engine project, playable systems, and packaged build; the blueprint itself is not a playable game.\n\n## Design files\n\n- [Game design](docs/GAME_DESIGN.md)\n- [Full production plan](docs/MILESTONES.md)\n- [Implementation status and resume point](OPEN_GAME_STATUS.md)\n- [Asset provenance](assets/ASSET_LEDGER.csv)\n`, { flag: 'wx' });
+  await writeFile(path.join(destination, 'README.md'), `# ${normalized.game.title}\n\nOriginal game project created with Open Game.\n\n## Current state\n\nThis folder contains the full game vision, agent workflow, dependency-aware production roadmap, resumable progress, and asset ledger. The coding agent should use the original brief to implement the engine project, playable systems, and packaged build; the blueprint itself is not a playable game.\n\n## Design files\n\n- [Game design](docs/GAME_DESIGN.md)\n- [Production skill](.agents/skills/open-game-creator/SKILL.md)\n- [Full production plan](docs/MILESTONES.md)\n- [Implementation status](OPEN_GAME_STATUS.md)\n- [Structured progress record](open-game-progress.json)\n- [Asset provenance](assets/ASSET_LEDGER.csv)\n`, { flag: 'wx' });
   await writeFile(path.join(destination, 'docs', 'GAME_DESIGN.md'), makeDesignDoc(normalized), { flag: 'wx' });
   if (creatorBrief) await writeFile(path.join(destination, 'GAME_BRIEF.md'), `${creatorBrief.trim()}\n`, { flag: 'wx' });
   await writeFile(path.join(destination, 'docs', 'MILESTONES.md'), makeMilestoneDoc(normalized), { flag: 'wx' });
   await writeFile(path.join(destination, 'assets', 'ASSET_LEDGER.csv'), makeAssetLedger(), { flag: 'wx' });
+  const initialProgress = {
+    engine: '', target: normalized.game.targetPlatform, phase: 'brief-captured', completedSystems: [],
+    verification: [], artifacts: [], blockers: [],
+    nextTask: 'Inspect the existing project and installed engine toolchains; select the best real build target.'
+  };
+  await writeFile(path.join(destination, 'open-game-progress.json'), `${JSON.stringify(initialProgress, null, 2)}\n`, { flag: 'wx' });
   await writeFile(path.join(destination, 'OPEN_GAME_STATUS.md'), makeStatusDoc(normalized), { flag: 'wx' });
-  return { projectPath: destination, blueprint: normalized, createdFiles: ['open-game.json', 'AGENTS.md', 'README.md', ...(creatorBrief ? ['GAME_BRIEF.md'] : []), 'docs/GAME_DESIGN.md', 'docs/MILESTONES.md', 'OPEN_GAME_STATUS.md', 'assets/ASSET_LEDGER.csv'] };
+  return { projectPath: destination, blueprint: normalized, createdFiles: ['open-game.json', 'AGENTS.md', 'README.md', ...(creatorBrief ? ['GAME_BRIEF.md'] : []), '.agents/skills/open-game-creator/SKILL.md', 'docs/GAME_DESIGN.md', 'docs/MILESTONES.md', 'OPEN_GAME_STATUS.md', 'open-game-progress.json', 'assets/ASSET_LEDGER.csv'] };
 }
 
 export async function readGameProject({ workspacePath = process.cwd(), projectPath }) {
@@ -192,6 +203,56 @@ export async function readGameProject({ workspacePath = process.cwd(), projectPa
   const destination = await resolveProjectPath(workspacePath, projectPath);
   const text = await readFile(path.join(destination, 'open-game.json'), 'utf8');
   return normalizeBlueprint(JSON.parse(text));
+}
+
+function validateProgressList(value, label) {
+  if (!Array.isArray(value) || value.length > 300 || value.some(item => typeof item !== 'string' || item.length > 2000)) {
+    throw new Error(`${label} must be a list of at most 300 strings, each no longer than 2,000 characters.`);
+  }
+  return value.map(item => item.trim()).filter(Boolean);
+}
+
+export async function readGameProgress({ workspacePath = process.cwd(), projectPath }) {
+  const destination = await resolveProjectPath(workspacePath, projectPath);
+  const progressPath = path.join(destination, 'open-game-progress.json');
+  try { return JSON.parse(await readFile(progressPath, 'utf8')); }
+  catch (error) {
+    if (error.code === 'ENOENT') throw new Error('This project has no Open Game progress record yet. Create it from a blueprint first.');
+    throw error;
+  }
+}
+
+export async function updateGameProgress({ workspacePath = process.cwd(), projectPath, engine, target, phase, completedSystems, verification, artifacts, blockers, nextTask }) {
+  const destination = await resolveProjectPath(workspacePath, projectPath);
+  const previous = await readGameProgress({ workspacePath, projectPath });
+  const next = {
+    ...previous,
+    ...(engine !== undefined ? { engine: assertString(engine, 'Engine', 200) } : {}),
+    ...(target !== undefined ? { target: assertString(target, 'Target', 200) } : {}),
+    ...(phase !== undefined ? { phase: assertString(phase, 'Phase', 100) } : {}),
+    ...(completedSystems !== undefined ? { completedSystems: validateProgressList(completedSystems, 'Completed systems') } : {}),
+    ...(verification !== undefined ? { verification: validateProgressList(verification, 'Verification evidence') } : {}),
+    ...(artifacts !== undefined ? { artifacts: validateProgressList(artifacts, 'Artifacts') } : {}),
+    ...(blockers !== undefined ? { blockers: validateProgressList(blockers, 'Blockers') } : {}),
+    ...(nextTask !== undefined ? { nextTask: assertString(nextTask, 'Next task', 2000) } : {}),
+    updatedAt: new Date().toISOString()
+  };
+  await writeFile(path.join(destination, 'open-game-progress.json'), `${JSON.stringify(next, null, 2)}\n`);
+  const section = (title, rows) => `## ${title}\n\n${rows.length ? rows.map(value => `- ${value}`).join('\n') : '- None recorded.'}\n`;
+  const markdown = [
+    '# Open Game progress', '',
+    `- Updated: ${next.updatedAt}`,
+    `- Engine: ${next.engine || 'Not selected'}`,
+    `- Target: ${next.target || 'Not selected'}`,
+    `- Phase: ${next.phase || 'Not started'}`, '',
+    section('Completed systems', next.completedSystems),
+    section('Build and play verification', next.verification),
+    section('Artifacts', next.artifacts),
+    section('Blockers', next.blockers),
+    '## Next concrete task', '', next.nextTask, ''
+  ].join('\n');
+  await writeFile(path.join(destination, 'OPEN_GAME_STATUS.md'), markdown);
+  return next;
 }
 
 export async function addGameSystem({ workspacePath = process.cwd(), projectPath, name, purpose, inputs = [], outputs = [], dependsOn = [] }) {

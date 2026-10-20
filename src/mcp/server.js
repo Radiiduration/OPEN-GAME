@@ -3,7 +3,7 @@ import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import * as z from 'zod/v4';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { addGameSystem, assessOriginality, createGameProject, planVerticalSlice, readGameProject } from '../core/project.js';
+import { addGameSystem, assessOriginality, createGameProject, planVerticalSlice, readGameProgress, readGameProject, updateGameProgress } from '../core/project.js';
 import { buildGame, packageGameDownload } from '../game/build.js';
 
 const workspacePath = process.env.OPEN_GAME_WORKSPACE || process.cwd();
@@ -96,6 +96,39 @@ function createServer() {
   }, async input => {
     try { return result(await readGameProject({ workspacePath, projectPath: input.project_path })); }
     catch (error) { return failure(error); }
+  });
+
+  server.registerTool('read_game_progress', {
+    title: 'Resume game production',
+    description: 'Read the last recorded engine, target, completed systems, build/play evidence, artifacts, blockers, and next task before continuing implementation.',
+    inputSchema: { project_path: z.string().min(1) }
+  }, async input => {
+    try { return result(await readGameProgress({ workspacePath, projectPath: input.project_path })); }
+    catch (error) { return failure(error); }
+  });
+
+  server.registerTool('update_game_progress', {
+    title: 'Record game production progress',
+    description: 'Persist verified implementation progress so the coding agent can continue across long runs. Record only systems actually implemented, commands actually run, artifacts actually produced, and concrete current blockers.',
+    inputSchema: {
+      project_path: z.string().min(1),
+      engine: z.string().max(200).optional(),
+      target: z.string().max(200).optional(),
+      phase: z.string().max(100).optional(),
+      completed_systems: z.array(z.string().max(2000)).max(300).optional(),
+      verification: z.array(z.string().max(2000)).max(300).optional().describe('Exact command or play check, followed by its actual outcome.'),
+      artifacts: z.array(z.string().max(2000)).max(300).optional(),
+      blockers: z.array(z.string().max(2000)).max(300).optional(),
+      next_task: z.string().max(2000).optional()
+    }
+  }, async input => {
+    try {
+      return result(await updateGameProgress({
+        workspacePath, projectPath: input.project_path, engine: input.engine, target: input.target,
+        phase: input.phase, completedSystems: input.completed_systems, verification: input.verification,
+        artifacts: input.artifacts, blockers: input.blockers, nextTask: input.next_task
+      }));
+    } catch (error) { return failure(error); }
   });
 
   server.registerTool('build_playable_game', {

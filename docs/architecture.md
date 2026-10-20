@@ -77,10 +77,10 @@ The release pipeline produces the engine source plus platform-specific downloada
 The repo currently contains:
 
 - A static Blueprint Studio for capturing and exporting a game brief.
-- A shared Node core for versioned blueprints, safe project scaffolds, asset provenance, resumable status, connected systems, and dependency-ordered production planning.
-- A CLI and MCP interface over those project operations, plus a generic ZIP packager for an already exported game.
+- A shared Node core for versioned blueprints, safe project scaffolds, asset provenance, connected systems, dependency-ordered production planning, and structured progress state with verified evidence and next-task handoff.
+- A CLI and MCP interface over those project operations, including resumable progress updates, plus a generic ZIP packager for an already exported game.
 - One bounded browser racing example adapter. It demonstrates a possible genre-specific adapter; it is not an arbitrary game generator.
-- An Open Game Creator skill and generated `AGENTS.md` handoff that tell the connected coding LLM to implement the creator’s actual brief, characters, engine project, requested systems, build, and download.
+- An Open Game Creator skill and generated `AGENTS.md` handoff that tell the connected coding LLM to implement the creator’s actual brief, characters, engine project, requested systems, build, and download. New projects carry a copy of the skill so future agents can resume from the game source folder alone.
 
 The connected LLM authors the game code. The repo does not contain a model, arbitrary engine generator, universal compiler, native exporters, asset-generation pipeline, or production multiplayer hosting. The generic package operation archives existing files but does not compile them. Open Game is designed as the reusable agent workflow and project handoff that lets a user’s coding agent build different original games; it does not make a short prompt instantly equal a finished AAA studio release.
 

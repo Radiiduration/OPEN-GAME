@@ -32,6 +32,8 @@ Restart or reconnect the agent after changing its MCP configuration. The model s
 - `add_game_system`: add a system with dependencies and shared inputs/outputs.
 - `plan_game_vertical_slice`: return the full production roadmap, dependency order, and first-slice acceptance criteria.
 - `read_game_blueprint`: load the current project contract for continued work.
+- `read_game_progress`: resume from recorded engine/build evidence, blockers, and next task.
+- `update_game_progress`: persist actual completed systems, checks run, artifacts, and blockers to the project handoff.
 - `build_playable_game`: create the included bounded browser racing example and adjacent ZIP from a matching blueprint. It is not a universal game generator.
 - `package_game_download`: package an exported source/build folder from any engine as a ZIP; this does not compile the project.
 - `review_game_originality`: flag a narrow set of commercial game name patterns in selected blueprint text for human review. This is not legal advice or a safety certificate.

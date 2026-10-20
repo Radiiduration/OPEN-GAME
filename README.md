@@ -69,7 +69,7 @@ Players open the generated `index.html`, choose Online Lobby, and connect to `ws
 
 ### MCP server
 
-Run `npm run mcp` as a local stdio MCP server. Set `OPEN_GAME_WORKSPACE` to the directory where generated game project folders may be created. MCP exposes project creation, system planning, blueprint reading, a bounded racing example build, a narrow originality signal scan, and generic ZIP packaging. The connected LLM performs game design and engine implementation; no MCP call pretends to create a complete arbitrary game on its own. Compilation and launch verification remain engine-specific agent tasks.
+Run `npm run mcp` as a local stdio MCP server. Set `OPEN_GAME_WORKSPACE` to the directory where generated game project folders may be created. MCP exposes project creation, system planning, blueprint reading, resumable progress tracking, a bounded racing example build, a narrow originality signal scan, and generic ZIP packaging. New projects carry an `AGENTS.md`, the Open Game Creator skill, the full brief, and structured progress files, so another coding agent can resume from the generated source folder. The connected LLM performs game design and engine implementation; no MCP call pretends to create a complete arbitrary game on its own. Compilation and launch verification remain engine-specific agent tasks.
 
 See [MCP setup](docs/mcp-setup.md) for the connection configuration and tool list. The overall design is described in [platform architecture](docs/architecture.md). The [working-model drawing](docs/open-game-working-model.svg) shows the prompt-to-build loop.
 

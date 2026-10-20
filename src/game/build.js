@@ -33,10 +33,10 @@ async function collectFiles(directory, base = '') {
   return output;
 }
 async function includeCreatorBundle(projectDir, outputDir) {
-  for (const [source, target] of [['docs/GAME_DESIGN.md', 'GAME_DESIGN.md'], ['docs/MILESTONES.md', 'PRODUCTION_PLAN.md'], ['assets/ASSET_LEDGER.csv', 'ASSET_LEDGER.csv']]) {
+  for (const [source, target] of [['docs/GAME_DESIGN.md', 'GAME_DESIGN.md'], ['docs/MILESTONES.md', 'PRODUCTION_PLAN.md'], ['assets/ASSET_LEDGER.csv', 'ASSET_LEDGER.csv'], ['.agents/skills/open-game-creator/SKILL.md', 'OPEN_GAME_CREATOR_SKILL.md']]) {
     try { await copyFile(path.join(projectDir, source), path.join(outputDir, target)); } catch (error) { if (error.code !== 'ENOENT') throw error; }
   }
-  await writeFile(path.join(outputDir, 'AGENTS.md'), `# Game project agent instructions\n\nRead GAME_BRIEF.md when present, GAME_BLUEPRINT.json, GAME_DESIGN.md, and PRODUCTION_PLAN.md before changing this game. Treat the creator brief as the destination. The included adapter is a playable starting point, not the complete game. Implement the requested systems as connected, editable engine code; build and run the project where the toolchain permits; fix failures; and update the production plan and progress notes with verified results. Do not claim unimplemented multiplayer, content, or platform builds. Use original or properly licensed creative material and preserve its source and license in ASSET_LEDGER.csv.\n`);
+  await writeFile(path.join(outputDir, 'AGENTS.md'), `# Game project agent instructions\n\nRead OPEN_GAME_CREATOR_SKILL.md, GAME_BRIEF.md when present, GAME_BLUEPRINT.json, GAME_DESIGN.md, and PRODUCTION_PLAN.md before changing this game. Treat the creator brief as the destination. The included adapter is a playable starting point, not the complete game. Implement the requested systems as connected, editable engine code; build and run the project where the toolchain permits; fix failures; and update the production plan and progress notes with verified results. Do not claim unimplemented multiplayer, content, or platform builds. Use original or properly licensed creative material and preserve its source and license in ASSET_LEDGER.csv.\n`);
 }
 
 export async function packageGameDownload({ workspacePath = process.cwd(), projectPath, outputPath }) {
