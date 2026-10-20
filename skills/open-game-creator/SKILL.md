@@ -16,6 +16,24 @@ Use this workflow when the user wants you to make or expand a game. They may des
 - Make the original creative identity visible in names, world rules, characters, story, visual direction, and assets. Genre conventions and broad gameplay ideas can inspire the design.
 - Be clear about what is implemented, what is planned, and what the current build can actually do. Never imply that an unbuilt system is playable. If the environment cannot support the requested complete build, explain the concrete blocker and leave the largest playable build the available tools can produce.
 
+## One-prompt execution contract
+
+Treat the creator's first brief as authorization to carry the project through implementation, packaging, and verification. Do not answer a build request with only a pitch, plan, starter template, or vertical slice. A single prompt is the input to the workflow; it does not remove the engineering work needed to deliver the game.
+
+For work spanning multiple phases or context windows, maintain `OPEN_GAME_STATUS.md` in the game project. Record the full destination, chosen engine and target, implemented systems, build/run command, latest verified build, known blockers, and next concrete task. On resume, read it and continue at the next incomplete acceptance criterion instead of restarting or asking the creator to repeat the brief.
+
+Use this completion loop until the requested deliverable is built or a concrete environment blocker prevents progress:
+
+1. **Capture the destination.** Preserve the requested experience, target platforms, multiplayer expectations, and original identity in `GAME_BIBLE.md`. Convert named commercial references into broad genre qualities and original design choices.
+2. **Choose a real target.** Inspect installed engines and export tools. Prefer an engine with a runnable local build path. Record the choice and unavailable SDKs. Do not silently substitute a browser mockup for a requested native or 3D game.
+3. **Plan the whole game and next build.** Create `PRODUCTION_PLAN.md` with requested system families, dependencies, playable milestones, and acceptance criteria. The first milestone proves the core experience; later milestones stay tracked and are implemented in this run when tools and time permit.
+4. **Implement integrated systems.** Build connected code and authored content in the actual engine project. A system is complete only when it participates in the playable loop and has a way to inspect or validate its state. Keep data editable and generated files distinct from creator-authored work.
+5. **Build and repair.** Run available engine import/build/export commands. Fix errors, launch the game when possible, and verify essential controls and gameplay. Never report an unrun build as successful. If an engine is unavailable, still create the source project and state the precise missing dependency and next command.
+6. **Package the deliverable.** Produce the requested downloadable build where the toolchain permits, plus source, controls, run instructions, save/config notes, and multiplayer deployment instructions when requested.
+7. **Continue from evidence.** Compare the build with the plan, fix the highest-impact missing or broken criteria, and repeat. Do not stop merely because a vertical slice works. Stop when requested criteria are implemented and verified, or identify the concrete external blocker preventing the next step.
+
+For multiplayer, document the topology, session/lobby flow, authority, replication, reconnect behavior, persistence, and deployment. Do not call a local shared-screen or LAN prototype production online multiplayer. For large worlds, use streaming or bounded simulation rather than one giant unoptimized scene. Use original or explicitly licensed generated art/audio and preserve provenance.
+
 ## Workflow
 
 If the Open Game MCP server is connected, use its tools to create/read the blueprint, add systems, and order the first playable slice. Treat these outputs as the shared project contract, then implement the actual engine project in the user's workspace. If MCP is unavailable, do the same work directly in project files. Do not stop after creating the design scaffold.

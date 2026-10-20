@@ -74,7 +74,11 @@ See [MCP setup](docs/mcp-setup.md) for the connection configuration and tool lis
 
 ### Use it with a coding LLM
 
-Load this repository as context in your coding agent, then describe your game in your own words. The root `AGENTS.md` points the agent to `skills/open-game-creator/SKILL.md`, which instructs it to inspect your project, preserve the full ambition, and implement a coherent playable slice before expanding the game. The skill guides the work; it does not itself run an LLM or guarantee that a complete studio-scale game can be generated in one prompt. The included adapter is a working racing starting point. Other genres, large open worlds, production-grade matchmaking/hosting, and native platform packaging need additional adapters and engineering.
+Load this repository in a coding agent, open the folder where you want the game source created, and give one complete brief describing the experience, target platform, and multiplayer needs. `AGENTS.md` routes the agent to the Open Game Creator skill. It treats that brief as the full job: preserve the destination, build and package the real game project, verify the build, and continue beyond the first playable milestone. For work that spans sessions, it records progress in `OPEN_GAME_STATUS.md` so the same brief does not need to be repeated.
+
+Example prompt: “Create an original open-world driving adventure for desktop. Give it a distinct coastal setting, responsive vehicle handling, exploration, rival crews, story missions, progression, save/load, and online co-op. Build the project in this folder, make it playable, package it, and keep implementing the requested systems until they are working. Use original names, world, art direction, and content.”
+
+The LLM performs the creative coding; Open Game provides its workflow, project tools, and one browser-racing adapter. This repo does not contain an autonomous model, universal engine compiler, native exporters, or production multiplayer hosting. A one-prompt workflow means one brief starts an end-to-end agent task; it does not make studio-scale AAA scope instantly feasible. The agent must report what it actually built and verified, and preserve the remaining work and concrete blockers. Other genres and native targets require the coding agent to implement the matching engine project.
 
 ## The problem
 

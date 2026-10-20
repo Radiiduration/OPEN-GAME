@@ -10,7 +10,7 @@ If the agent supports project instructions but not skill discovery, give it both
 
 ## Give it a game vision
 
-Describe what you want in your own words. Strong briefs include the player fantasy, genre blend, important systems, tone, target platform, and what makes the world original. You do not need to specify every technical detail.
+Give one complete brief describing what you want in your own words. Strong briefs include the player fantasy, genre blend, important systems, tone, target platform, multiplayer needs, and what makes the world original. The initial prompt authorizes the full implementation and packaging workflow; you do not need to specify every technical detail or re-prompt between milestones.
 
 Example:
 
@@ -20,14 +20,14 @@ Example:
 
 1. Inspect the existing repository, instructions, and available game tools.
 2. Record the full vision, original identity, system connections, assumptions, and staged plan.
-3. Pick a vertical slice that exercises the signature experience and core systems.
-4. Create or modify real, editable engine project files.
-5. For a racing brief, use the included browser adapter to create a downloadable playable game and optional WebSocket room server, then expand the editable output through the LLM workflow. For other genres, do not pass the brief through the racing template; build the appropriate source project directly or add a matching adapter.
-6. Include multiplayer packages and server/session setup when multiplayer is part of the brief.
-7. Explain how to launch the build, what it includes, and which requested features remain incomplete.
+3. Choose an engine with a real build path and write the entire requested system set plus dependency order into the production plan.
+4. Create or modify real, editable engine project files; implement a connected playable slice, then continue implementing the remaining requested systems and authored content.
+5. For racing, use the included browser adapter as a playable base and expand its editable output. For other genres, do not pass the brief through the racing template; build the appropriate source project directly or add a matching adapter.
+6. Include the requested multiplayer package, authority/session model, reconnect behavior, and deployment setup.
+7. Build, repair, package, and launch where tools allow. Keep `OPEN_GAME_STATUS.md` current so interrupted work resumes at the next unchecked criterion. State exactly what was verified and any concrete blocker.
 
 ## What this workflow does not provide
 
-The included racing adapter generates a browser playable multi-lap race with AI rivals, setup tradeoffs, career reputation saved locally, a packaged ZIP, and an optional server-authoritative room server. It is not a universal engine adapter: native exports, large open worlds, deep career content, production matchmaking, and secure public hosting require substantial further work. The repo does not bundle a language model or proprietary assets. A huge game still needs iterative design, implementation, content creation, and refinement.
+The included racing adapter generates a browser playable multi-lap race with AI rivals, setup tradeoffs, career reputation saved locally, a packaged ZIP, and an optional server-authoritative room server. It is not a universal engine adapter: native exports, large open worlds, deep career content, production matchmaking, and secure public hosting require substantial further work. The repo does not bundle a language model or proprietary assets. One brief can drive the whole agent workflow, but a major studio-scale game still needs extensive iteration, implementation, content creation, and refinement; report actual build evidence rather than implying the prompt alone produced production quality.
 
 The workflow also cannot certify legal safety or guarantee protection from legal claims. Creators remain responsible for using original or properly licensed content.

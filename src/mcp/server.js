@@ -83,8 +83,8 @@ function createServer() {
   });
 
   server.registerTool('plan_game_vertical_slice', {
-    title: 'Plan a playable game slice',
-    description: 'Read a game project and return a dependency-ordered first playable slice with acceptance criteria. The plan preserves the larger vision without claiming that the game is already implemented.',
+    title: 'Plan the complete game production path',
+    description: 'Return the full requested system set in dependency order, a complete production roadmap, and first-slice acceptance criteria. The slice is a checkpoint, not completion; the coding agent should implement and package the requested game and resume from OPEN_GAME_STATUS.md.',
     inputSchema: { project_path: z.string().min(1) }
   }, async input => {
     try { return result(await planVerticalSlice({ workspacePath, projectPath: input.project_path })); }

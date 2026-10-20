@@ -144,9 +144,14 @@ function makeDesignDoc(blueprint) {
 }
 
 function makeMilestoneDoc(blueprint) {
-  const names = blueprint.systems.map(system => system.name);
-  const core = names[0] || 'Core player activity';
-  return `# ${blueprint.game.title}: build milestones\n\n## Destination\n\n${blueprint.game.pitch}\n\n## Milestone 1 — prove the core experience\n\n- Implement **${core}** in one representative play space.\n- Make controls, camera, response, and feedback feel deliberate.\n- Add one short activity with a clear start, success, failure, and recovery path.\n- End with a meaningful reward or world-state change.\n\n## Milestone 2 — connect supporting systems\n\n${names.slice(1).map(name => `- Connect **${name}** to shared player or world state.`).join('\n') || '- Add one supporting system based on player feedback.'}\n\n## Milestone 3 — expand the world\n\n- Add more content only after the core loop is enjoyable and stable.\n- Keep expansion within the game's performance and production budget.\n- Track asset sources and licenses as content is added.\n\n## Do not mistake\n\nThis plan is a staged route toward the full vision. The initial scaffold is not a finished game and does not yet contain engine gameplay.\n`;
+  const systems = blueprint.systems.length
+    ? blueprint.systems.map((system, index) => `${index + 1}. **${system.name}** (${system.status}) — ${system.purpose} Dependencies: ${system.dependsOn.join(', ') || 'none'}.`).join('\n')
+    : 'Add the systems required by the core experience and record their dependencies here.';
+  return `# ${blueprint.game.title}: production plan\n\n## Destination\n\n${blueprint.game.pitch}\n\n- **Core experience:** ${blueprint.game.coreExperience}\n- **Ambition:** ${blueprint.game.ambition}\n- **Original identity:** ${blueprint.game.originality}\n\n## Full requested system set\n\n${systems}\n\n## Milestone 1 — playable proof\n\n- Implement the signature player activity in a representative environment.\n- Deliver responsive controls, camera, clear feedback, and start/success/failure/recovery states.\n- Connect at least one supporting system to shared world or player state.\n- Persist one meaningful reward or world-state change.\n- Record and run a reproducible build command.\n\n## Milestone 2 — complete connected systems\n\n- Implement every planned system above in dependency order; do not treat this milestone as optional after the slice.\n- Connect systems through explicit shared state and data, not disconnected demos.\n- Add debug/inspection affordances and acceptance checks for each system.\n\n## Milestone 3 — requested content and multiplayer\n\n- Add the locations, missions, characters, activities, and progression needed to fulfill the brief.\n- Implement the requested multiplayer topology, sessions, replication, reconnect, persistence, and deployment instructions. Mark unavailable production services as blockers instead of implying they exist.\n\n## Milestone 4 — quality, packaging, release\n\n- Validate controls, saves, references, performance, accessibility options, and asset provenance.\n- Fix build errors, package the requested target, and verify the actual artifact launches where the local environment allows.\n- Compare the packaged build against the creator's full brief; document only concrete remaining blockers.\n\n## Progress rule\n\nA playable slice is a checkpoint, not completion. Keep the destination and unimplemented acceptance criteria visible; continue implementation through the requested systems and content. Update \`OPEN_GAME_STATUS.md\` after each milestone and when resuming work.\n`;
+}
+
+function makeStatusDoc(blueprint) {
+  return `# ${blueprint.game.title}: implementation status\n\n## Destination\n\n${blueprint.game.pitch}\n\n## Target\n\n- Engine/platform: not selected; inspect this environment and choose a buildable target.\n- Full requested systems: see [production plan](docs/MILESTONES.md).\n\n## Progress\n\n- Blueprint and production plan: created.\n- Engine implementation: not started.\n- Latest verified build: none.\n- Known external blockers: none identified yet.\n\n## Next concrete task\n\nInspect the repository and installed engine toolchains, select the actual game target, then implement and build the first playable milestone. After it works, continue through the remaining planned systems instead of stopping at the slice.\n\nUpdate this file with real evidence after each build; never mark an unrun build as verified.\n`;
 }
 
 function makeAssetLedger() {
@@ -161,11 +166,12 @@ export async function createGameProject({ workspacePath = process.cwd(), project
   await mkdir(path.join(destination, 'docs'));
   await mkdir(path.join(destination, 'assets'));
   await writeFile(path.join(destination, 'open-game.json'), `${JSON.stringify(normalized, null, 2)}\n`, { flag: 'wx' });
-  await writeFile(path.join(destination, 'README.md'), `# ${normalized.game.title}\n\nOriginal game project created with Open Game.\n\n## Current state\n\nThis folder contains the game's initial blueprint and production plan. An engine project and playable systems still need to be generated.\n\n## Design files\n\n- [Game design](docs/GAME_DESIGN.md)\n- [Build milestones](docs/MILESTONES.md)\n- [Asset provenance](assets/ASSET_LEDGER.csv)\n`, { flag: 'wx' });
+  await writeFile(path.join(destination, 'README.md'), `# ${normalized.game.title}\n\nOriginal game project created with Open Game.\n\n## Current state\n\nThis folder contains the full game vision, dependency-aware production roadmap, progress handoff, and asset ledger. The coding agent should use the original brief to implement the engine project, playable systems, and packaged build; the blueprint itself is not a playable game.\n\n## Design files\n\n- [Game design](docs/GAME_DESIGN.md)\n- [Full production plan](docs/MILESTONES.md)\n- [Implementation status and resume point](OPEN_GAME_STATUS.md)\n- [Asset provenance](assets/ASSET_LEDGER.csv)\n`, { flag: 'wx' });
   await writeFile(path.join(destination, 'docs', 'GAME_DESIGN.md'), makeDesignDoc(normalized), { flag: 'wx' });
   await writeFile(path.join(destination, 'docs', 'MILESTONES.md'), makeMilestoneDoc(normalized), { flag: 'wx' });
   await writeFile(path.join(destination, 'assets', 'ASSET_LEDGER.csv'), makeAssetLedger(), { flag: 'wx' });
-  return { projectPath: destination, blueprint: normalized, createdFiles: ['open-game.json', 'README.md', 'docs/GAME_DESIGN.md', 'docs/MILESTONES.md', 'assets/ASSET_LEDGER.csv'] };
+  await writeFile(path.join(destination, 'OPEN_GAME_STATUS.md'), makeStatusDoc(normalized), { flag: 'wx' });
+  return { projectPath: destination, blueprint: normalized, createdFiles: ['open-game.json', 'README.md', 'docs/GAME_DESIGN.md', 'docs/MILESTONES.md', 'OPEN_GAME_STATUS.md', 'assets/ASSET_LEDGER.csv'] };
 }
 
 export async function readGameProject({ workspacePath = process.cwd(), projectPath }) {
@@ -217,6 +223,20 @@ export async function planVerticalSlice({ workspacePath = process.cwd(), project
   return {
     game: blueprint.game.title,
     coreExperience: blueprint.game.coreExperience,
+    productionRoadmap: {
+      destination: blueprint.game.pitch,
+      systemsInDependencyOrder: order.map(id => {
+        const system = byId.get(id);
+        return { id, name: system.name, purpose: system.purpose, status: system.status, dependsOn: system.dependsOn };
+      }),
+      phases: [
+        'Build and verify a playable proof of the core experience.',
+        'Implement every planned system in dependency order and connect them through shared game state.',
+        'Deliver the requested authored world, missions, characters, progression, and multiplayer scope.',
+        'Run quality checks, package the target platform, launch the artifact, and record evidence and blockers.'
+      ],
+      completionRule: 'The first playable slice is a checkpoint, not completion; continue until the requested systems are built and verified or a concrete external blocker remains.'
+    },
     firstPlayableSlice: {
       goal: `Prove the core experience: ${blueprint.game.coreExperience}.`,
       systemsInBuildOrder: order.map(id => ({ id, name: byId.get(id).name })),
@@ -227,7 +247,7 @@ export async function planVerticalSlice({ workspacePath = process.cwd(), project
         'Success, failure, and recovery have intentional outcomes.',
         'A progression or world-state change persists for the next session.'
       ],
-      next: 'Implement this slice in the selected game engine, then play it and refine the core loop before adding large volumes of content.'
+      next: 'Implement and verify this slice in the selected game engine, then continue down the full production roadmap.'
     }
   };
 }
