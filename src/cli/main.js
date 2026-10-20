@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { addGameSystem, assessOriginality, createGameProject, planVerticalSlice, readGameProject, resolveWorkspaceDestination } from '../core/project.js';
 import { buildGame, packageGameDownload } from '../game/build.js';
+import { inspectGameToolchains } from '../core/toolchains.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const args = process.argv.slice(2);
@@ -16,7 +17,7 @@ function option(name, fallback = undefined) {
 }
 
 function help() {
-  console.log(`Open Game CLI\n\nCommands:\n  open-game studio [--port 4173]\n  open-game create --blueprint <file.json> --output <project-folder>\n  open-game add-system --project <folder> --name <name> [--purpose <text>]\n  open-game plan --project <folder>  (full roadmap + playable-slice criteria)\n  open-game inspect --project <folder>\n  open-game review --project <folder>\n  open-game build --project <folder> --output <playable-folder>  (racing example adapter)\n  open-game package --project <exported-build-folder> --output <download.zip>\n  open-game multiplayer --project <playable-folder>\n  open-game mcp\n\nProject paths are created inside or resolved relative to the current working directory.`);
+  console.log(`Open Game CLI\n\nCommands:\n  open-game doctor  (detect installed game engines and build tools)\n  open-game studio [--port 4173]\n  open-game create --blueprint <file.json> --output <project-folder>\n  open-game add-system --project <folder> --name <name> [--purpose <text>]\n  open-game plan --project <folder>  (full roadmap + playable-slice criteria)\n  open-game inspect --project <folder>\n  open-game review --project <folder>\n  open-game build --project <folder> --output <playable-folder>  (racing example adapter)\n  open-game package --project <exported-build-folder> --output <download.zip>\n  open-game multiplayer --project <playable-folder>\n  open-game mcp\n\nProject paths are created inside or resolved relative to the current working directory.`);
 }
 
 async function serveStudio() {
@@ -51,6 +52,10 @@ async function main() {
   const command = args[0];
   if (!command || command === '--help' || command === 'help') return help();
   if (command === 'studio') return serveStudio();
+  if (command === 'doctor') {
+    console.log(JSON.stringify(inspectGameToolchains(), null, 2));
+    return;
+  }
   if (command === 'mcp') {
     const { startMcpServer } = await import('../mcp/server.js');
     return startMcpServer();

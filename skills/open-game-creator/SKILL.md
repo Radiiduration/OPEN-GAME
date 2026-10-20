@@ -20,7 +20,7 @@ Open Game is an agent toolkit, not a game template or a model. The connected cod
 
 1. **Capture the whole brief.** Preserve the original prompt verbatim in `GAME_BRIEF.md` when available. Keep its player experience, characters, world, target platform, controls, content, accessibility, save, and multiplayer expectations reflected in `docs/GAME_DESIGN.md`. Keep assumptions visible; ask only if an unresolved choice changes the game materially.
 2. **Design the complete game.** Write `PRODUCTION_PLAN.md` with the connected gameplay loops, system responsibilities and dependencies, content needed, milestones, and concrete acceptance criteria. Keep the complete requested destination visible beyond the first playable checkpoint.
-3. **Inspect and select the implementation target.** Check the existing project, available engines, SDKs, build/export tools, and asset pipeline. Record the selected engine, target, run/build commands, and concrete missing dependencies.
+3. **Inspect and select the implementation target.** Check the existing project and call MCP `inspect_game_toolchains` (or run `open-game doctor`) to identify available engines and build tools. Then check SDKs, export modules, and asset tools; detection alone does not prove they are usable. Record the selected engine, target, run/build commands, and concrete missing dependencies.
 4. **Implement actual game files.** Create or extend real engine scenes, scripts, data, UI, levels, and original content. Connect movement/combat/driving/activity loops to characters, world state, progression, saves, and feedback as relevant. Build coherent systems, not disconnected menu mockups. Use data-driven content where it makes iteration easier.
 5. **Create the game's art and sound pipeline.** Check which image, audio, modeling, and engine tools are actually available. Use creator-supplied assets only when authorized, generate distinct assets with available tools, and create procedural engine-native materials/geometry/audio when that fits. Build a coherent art direction and asset import pipeline; do not leave primitive placeholders as the final answer when the brief calls for finished presentation. Record sources, licenses, and generated provenance.
 6. **Implement multiplayer when requested.** Define client/server authority, player sessions and lobbies, replication, persistence, reconnect/disconnect behavior, deployment, and security boundaries. Implement and run the requested topology where tools permit. Label local prototypes accurately; never call LAN play production online multiplayer. Do not claim hosted services are provisioned when credentials, infrastructure, or user configuration are unavailable.
@@ -32,6 +32,7 @@ Open Game is an agent toolkit, not a game template or a model. The connected cod
 
 Use MCP tools as project memory and structured operations, not as a substitute for coding:
 
+- `inspect_game_toolchains` reports installed engine/build executables before target selection.
 - `create_game_project` records an original game brief as a project scaffold. Immediately continue with real game implementation in the connected coding environment.
 - `add_game_system` and `plan_game_vertical_slice` keep connected systems and their production order visible.
 - `read_game_blueprint` resumes the project from its saved contract.

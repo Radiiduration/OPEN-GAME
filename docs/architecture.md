@@ -74,11 +74,11 @@ The release pipeline produces the engine source plus platform-specific downloada
 
 ## Current implemented boundaries
 
-The repo currently contains:
+The support levels and evidence required before calling a target dependable are defined in [the reliability contract](reliability-contract.md). The repo currently contains:
 
 - A static Blueprint Studio for capturing and exporting a game brief.
 - A shared Node core for versioned blueprints, safe project scaffolds, asset provenance, connected systems, dependency-ordered production planning, and structured progress state with verified evidence and next-task handoff.
-- A CLI and MCP interface over those project operations, including resumable progress updates, plus a generic ZIP packager for an already exported game.
+- A CLI and MCP interface over those project operations, including engine/toolchain inspection and resumable progress updates, plus a generic ZIP packager for an already exported game.
 - One bounded browser racing example adapter. It demonstrates a possible genre-specific adapter; it is not an arbitrary game generator.
 - An Open Game Creator skill and generated `AGENTS.md` handoff that tell the connected coding LLM to implement the creator’s actual brief, characters, engine project, requested systems, build, and download. New projects carry a copy of the skill so future agents can resume from the game source folder alone.
 

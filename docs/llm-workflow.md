@@ -18,7 +18,7 @@ Example:
 
 ## What the agent should do
 
-1. Inspect the existing repository, instructions, and available game tools.
+1. Inspect the existing repository and instructions, then call `inspect_game_toolchains` or run `open-game doctor` to discover available engines and build tools. Confirm the required SDKs and export modules separately; a detected executable is not proof of a working target.
 2. Record the full vision, original identity, system connections, assumptions, and staged plan.
 3. Choose an engine with a real build path and write the entire requested system set plus dependency order into the production plan.
 4. Create or modify real, editable engine project files; implement a connected playable slice, then continue implementing the remaining requested systems and authored content.

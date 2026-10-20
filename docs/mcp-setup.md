@@ -28,6 +28,7 @@ Add a server entry to the MCP configuration supported by your coding agent. Use 
 
 Restart or reconnect the agent after changing its MCP configuration. The model should see these tools:
 
+- `inspect_game_toolchains`: list detectable engine and build executables before selecting a target.
 - `create_game_project`: save the creator’s original brief as a project scaffold. The connected coding agent then implements the game in the appropriate engine.
 - `add_game_system`: add a system with dependencies and shared inputs/outputs.
 - `plan_game_vertical_slice`: return the full production roadmap, dependency order, and first-slice acceptance criteria.
@@ -38,4 +39,4 @@ Restart or reconnect the agent after changing its MCP configuration. The model s
 - `package_game_download`: package an exported source/build folder from any engine as a ZIP; this does not compile the project.
 - `review_game_originality`: flag a narrow set of commercial game name patterns in selected blueprint text for human review. This is not legal advice or a safety certificate.
 
-The server confines project paths to `OPEN_GAME_WORKSPACE`. Project creation, builds, and ZIP packaging make new output paths and do not overwrite existing files. The example adapter targets browser play and includes a LAN/friends WebSocket room demo. Other engines and production online infrastructure require additional adapters and implementation.
+The server confines project paths to `OPEN_GAME_WORKSPACE`. Project creation, builds, and ZIP packaging make new output paths and do not overwrite existing files. The example adapter targets browser play and includes a LAN/friends WebSocket room demo. Other engines and production online infrastructure require additional adapters and implementation. See [the reliability contract](reliability-contract.md) for the evidence required before calling a target dependable.

@@ -5,6 +5,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { addGameSystem, assessOriginality, createGameProject, planVerticalSlice, readGameProgress, readGameProject, updateGameProgress } from '../core/project.js';
 import { buildGame, packageGameDownload } from '../game/build.js';
+import { inspectGameToolchains } from '../core/toolchains.js';
 
 const workspacePath = process.env.OPEN_GAME_WORKSPACE || process.cwd();
 
@@ -18,6 +19,12 @@ function failure(error) {
 
 function createServer() {
   const server = new McpServer({ name: 'open-game', version: '0.2.0' });
+
+  server.registerTool('inspect_game_toolchains', {
+    title: 'Inspect installed game build tools',
+    description: 'Detect available engines and build tools before choosing a target. Detection does not prove export modules, platform SDKs, licenses, or assets are installed.',
+    inputSchema: {}
+  }, async () => result(inspectGameToolchains()));
 
   server.registerTool('create_game_project', {
     title: 'Create game project blueprint',

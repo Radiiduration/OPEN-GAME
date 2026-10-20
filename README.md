@@ -40,6 +40,7 @@ The Studio currently captures a game brief and exports a blueprint. One bounded 
 From a terminal in the repository:
 
 ```sh
+node src/cli/main.js doctor
 node src/cli/main.js create --blueprint ./blueprint.json --output ./my-game
 node src/cli/main.js inspect --project ./my-game
 node src/cli/main.js plan --project ./my-game
@@ -69,9 +70,11 @@ Players open the generated `index.html`, choose Online Lobby, and connect to `ws
 
 ### MCP server
 
-Run `npm run mcp` as a local stdio MCP server. Set `OPEN_GAME_WORKSPACE` to the directory where generated game project folders may be created. MCP exposes project creation, system planning, blueprint reading, resumable progress tracking, a bounded racing example build, a narrow originality signal scan, and generic ZIP packaging. New projects carry an `AGENTS.md`, the Open Game Creator skill, the full brief, and structured progress files, so another coding agent can resume from the generated source folder. The connected LLM performs game design and engine implementation; no MCP call pretends to create a complete arbitrary game on its own. Compilation and launch verification remain engine-specific agent tasks.
+Run `npm run mcp` as a local stdio MCP server. Set `OPEN_GAME_WORKSPACE` to the directory where generated game project folders may be created. MCP exposes engine/toolchain inspection, project creation, system planning, blueprint reading, resumable progress tracking, a bounded racing example build, a narrow originality signal scan, and generic ZIP packaging. New projects carry an `AGENTS.md`, the Open Game Creator skill, the full brief, and structured progress files, so another coding agent can resume from the generated source folder. The connected LLM performs game design and engine implementation; no MCP call pretends to create a complete arbitrary game on its own. Compilation and launch verification remain engine-specific agent tasks.
 
-See [MCP setup](docs/mcp-setup.md) for the connection configuration and tool list. The overall design is described in [platform architecture](docs/architecture.md). The [working-model drawing](docs/open-game-working-model.svg) shows the prompt-to-build loop.
+Use `open-game doctor` or MCP `inspect_game_toolchains` before selecting an engine. It reports which engine/build executables respond in the agent's environment; it cannot confirm that export SDKs, licenses, or platform modules are installed.
+
+See [MCP setup](docs/mcp-setup.md) for the connection configuration and tool list. Read the [reliability contract](docs/reliability-contract.md) for the support levels and evidence required before calling an engine/platform lane dependable. The overall design is described in [platform architecture](docs/architecture.md). The [working-model drawing](docs/open-game-working-model.svg) shows the prompt-to-build loop.
 
 ### Use it with a coding LLM
 
