@@ -68,7 +68,7 @@ Players open the generated `index.html`, choose Online Lobby, and connect to `ws
 
 ### MCP server
 
-Run `npm run mcp` as a local stdio MCP server. Set `OPEN_GAME_WORKSPACE` to the directory where generated game project folders may be created. The MCP tools create a design scaffold, add a system, plan a vertical slice, read the blueprint, run a narrow originality signal scan, and build the playable browser racing package. The `build_playable_game` operation generates a ZIP from an existing Open Game project. The agent can then expand the editable game source into additional original systems and content.
+Run `npm run mcp` as a local stdio MCP server. Set `OPEN_GAME_WORKSPACE` to the directory where generated game project folders may be created. The MCP tools create a design scaffold and persistent build handoff, add a system, return the complete dependency-ordered production roadmap plus first-slice acceptance criteria, read the blueprint, run a narrow originality signal scan, and build the playable browser racing package. The `build_playable_game` operation generates a ZIP from an existing Open Game project. The coding agent then implements and verifies the remaining requested systems in the chosen engine.
 
 See [MCP setup](docs/mcp-setup.md) for the connection configuration and tool list. The overall design is described in [platform architecture](docs/architecture.md). The [working-model drawing](docs/open-game-working-model.svg) shows the prompt-to-build loop.
 

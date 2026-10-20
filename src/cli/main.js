@@ -16,7 +16,7 @@ function option(name, fallback = undefined) {
 }
 
 function help() {
-  console.log(`Open Game CLI\n\nCommands:\n  open-game studio [--port 4173]\n  open-game create --blueprint <file.json> --output <project-folder>\n  open-game add-system --project <folder> --name <name> [--purpose <text>]\n  open-game plan --project <folder>\n  open-game inspect --project <folder>\n  open-game review --project <folder>\n  open-game build --project <folder> --output <playable-folder>\n  open-game multiplayer --project <playable-folder>\n  open-game mcp\n\nProject paths are created inside or resolved relative to the current working directory.`);
+  console.log(`Open Game CLI\n\nCommands:\n  open-game studio [--port 4173]\n  open-game create --blueprint <file.json> --output <project-folder>\n  open-game add-system --project <folder> --name <name> [--purpose <text>]\n  open-game plan --project <folder>  (full roadmap + playable-slice criteria)\n  open-game inspect --project <folder>\n  open-game review --project <folder>\n  open-game build --project <folder> --output <playable-folder>\n  open-game multiplayer --project <playable-folder>\n  open-game mcp\n\nProject paths are created inside or resolved relative to the current working directory.`);
 }
 
 async function serveStudio() {
