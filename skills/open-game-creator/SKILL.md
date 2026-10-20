@@ -40,7 +40,7 @@ If the Open Game MCP server is connected, use its tools to create/read the bluep
 
 ## Available build adapter
 
-The repository includes one working **browser racing adapter**. When a brief asks for original circuit racing/motorsport, create or update an Open Game blueprint, review originality signals, then use MCP `build_playable_game` or CLI `open-game build --project <project> --output <new-folder>` to generate an editable browser game and adjacent ZIP. The generated game includes AI rivals, setup tradeoffs, a local career profile, and an optional friend-hosted WebSocket room server. Continue from the generated files for requested systems the adapter does not include; do not treat its baseline as the full destination.
+The repository includes two working **browser game adapters**. Original circuit racing/motorsport briefs generate AI rivals, setup tradeoffs, a local career profile, and optional friend-hosted WebSocket rooms. Open-world/action/adventure briefs generate an original top-down coastal world with exploration, contacts, sequential contracts, persistent reputation, and a downloadable ZIP. Use MCP `build_playable_game` or CLI `open-game build --project <project> --output <new-folder>`, then continue from the generated files to implement the complete requested destination; do not treat either baseline as an AAA game or the final scope.
 
 For any engine, once its export/build folder exists, use MCP `package_game_download` or CLI `open-game package --project <export-folder> --output <new-zip>` to create a portable ZIP. This only archives the existing output; it does not compile the engine project or certify that the game launches.
 

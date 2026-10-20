@@ -5,6 +5,7 @@ import { assessOriginality, normalizeBlueprint, resolveWorkspaceDestination } fr
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const template = path.join(here, 'template');
+const adventureTemplate = path.join(here, 'adventure');
 
 function crc32(buf) {
   let c = 0xffffffff;
@@ -59,9 +60,9 @@ export async function buildGame({ workspacePath = process.cwd(), projectPath, ou
   const projectDir = await resolveWorkspaceDestination(workspacePath, projectPath);
   const blueprint = normalizeBlueprint(JSON.parse(await readFile(path.join(projectDir, 'open-game.json'), 'utf8')));
   const originalityReview = assessOriginality(blueprint);
-  if (!/(race|racing|motorsport|formula|circuit|driving)/i.test(blueprint.game.coreExperience)) {
-    throw new Error(`The included browser adapter builds racing games; this project's core experience is "${blueprint.game.coreExperience}". Use the Open Game Creator workflow to implement a matching genre adapter instead.`);
-  }
+  const isRace = /(race|racing|motorsport|formula|circuit|driving)/i.test(blueprint.game.coreExperience);
+  const isAdventure = /(open.world|action|adventure|role.play|\brpg\b|survival|sandbox|exploration|city)/i.test(blueprint.game.coreExperience);
+  if (!isRace && !isAdventure) throw new Error(`No built-in adapter matches "${blueprint.game.coreExperience}" yet. Use the Open Game Creator workflow to implement a matching engine project, then package its export with "open-game package".`);
   const outputDir = await resolveWorkspaceDestination(workspacePath, outputPath);
   const zipPath = `${outputDir}.zip`;
   for (const target of [outputDir, zipPath]) {
@@ -70,6 +71,18 @@ export async function buildGame({ workspacePath = process.cwd(), projectPath, ou
   }
   await mkdir(path.dirname(outputDir), { recursive: true });
   await mkdir(outputDir, { recursive: false });
+  if (!isRace) {
+    for (const name of ['index.html', 'game.css', 'game.js']) await writeFile(path.join(outputDir, name), await readFile(path.join(adventureTemplate, name)));
+    const config = { title: blueprint.game.title, pitch: blueprint.game.pitch, playerName: blueprint.game.playerName || 'Wayfarer', accentColor: blueprint.game.accentColor };
+    await writeFile(path.join(outputDir, 'game-config.js'), `window.OPEN_GAME_CONFIG=${safeJson(config)};\n`);
+    await writeFile(path.join(outputDir, 'README.md'), `# ${blueprint.game.title}\n\n${blueprint.game.pitch}\n\n## Play\n\nOpen \`index.html\` in a desktop browser. Explore the original top-down coastal district with WASD or arrow keys, Shift to sprint, E to talk or complete an objective, and F to enter/exit the parked car. Accept three contracts, travel to their markers, and earn persistent reputation. Progress is saved in this browser.\n\nThis is an editable 2D adventure foundation, not a finished AAA open world. Extend the world, missions, characters, traversal, and multiplayer in the source files.\n\n## Originality\n\nAll included locations, characters, and placeholder content are original to this template. Review ORIGINALITY_REVIEW.md, record third-party asset sources and licenses, and replace placeholders with original or properly licensed material. Open Game cannot certify legal safety.\n`);
+    const matches = originalityReview.matches.map(match => `- ${match.reference} in ${match.field}`).join('\n');
+    const notes = originalityReview.notes.map(note => `- ${note}`).join('\n');
+    await writeFile(path.join(outputDir, 'ORIGINALITY_REVIEW.md'), `# Originality review signals\n\n**Status: ${originalityReview.status}**\n\n${matches || 'The lightweight scan found no configured reference patterns in selected blueprint text. This does not establish originality or non-infringement.'}\n\n## Limits\n\n${notes}\n`);
+    const files = await collectFiles(outputDir);
+    await writeFile(zipPath, zipBuffer(files));
+    return { game: blueprint.game.title, adapter: 'browser-open-world-adventure', playableFolder: outputDir, downloadZip: zipPath, files: files.length, originalityReview };
+  }
   for (const name of ['index.html', 'game.css', 'game.js']) await writeFile(path.join(outputDir, name), await readFile(path.join(template, name)));
   await writeFile(path.join(outputDir, 'race-sim.js'), await readFile(path.join(here, 'race-sim.js')));
   const rivals = blueprint.game.rivalNames.length ? blueprint.game.rivalNames : ['Mika Vale', 'Tomas Reed', 'Aya Nakamura', 'Luca Serrano', 'Nia Brooks'];

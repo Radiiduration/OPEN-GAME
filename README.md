@@ -14,7 +14,7 @@ The target is a creator workflow for games with the depth people expect from maj
 
 Games at this scale take teams, time, iteration, and a capable engine. Open Game will not pretend a prompt can instantly produce a finished AAA game. It will make ambitious projects more achievable by decomposing them into coherent designs, reusable systems, playable vertical slices, production milestones, and progressively richer builds.
 
-**The intended end product is a downloadable game.** A creator supplies an original brief to a coding LLM with this repo available. The agent uses Open Game's workflow and tools to turn that brief into editable project files, implement connected systems, build and package for a target platform, and iterate from play feedback. The repo now includes a working first end-to-end adapter: a generated browser racing game, downloadable ZIP, and optional authoritative WebSocket room server. This proves the pipeline for an original racing-game slice; it does not mean the repo can instantly generate arbitrary AAA games or studio-scale open worlds.
+**The intended end product is a downloadable game.** A creator supplies an original brief to a coding LLM with this repo available. The agent uses Open Game's workflow and tools to turn that brief into editable project files, implement connected systems, build and package for a target platform, and iterate from play feedback. The repo includes browser racing and top-down open-world adventure adapters that generate playable game folders and ZIP downloads. They are real genre foundations, not instant AAA games or studio-scale open worlds.
 
 ## Product direction
 
@@ -33,7 +33,7 @@ The repo combines an agent-facing **Open Game Creator** skill, a visual **Game B
 
 Install dependencies with `npm install`, then run `npm run studio` and open the local URL printed in the terminal. Describe the experience, set your driver/team/rivals/track, select systems and ambition, save a draft, or export a JSON blueprint.
 
-The first game adapter generates a standalone browser racer with a multi-lap circuit race, AI grid, keyboard driving, overtake boost, garage setup tradeoffs saved by career profile, local career reputation, classification and finish states. It produces the editable game folder and a ZIP download. An optional WebSocket server simulates online player inputs and race state in shared rooms. This is a browser prototype, not a native binary or AAA game. A small phrase scan flags selected known franchise references for human review; it does not inspect game assets or code and cannot establish legal safety.
+The racing adapter generates a standalone browser racer with AI rivals, vehicle setup, career progress, and optional WebSocket rooms. The adventure adapter generates an original top-down coastal district with exploration, contacts, sequential contracts, a map, sprint energy, and saved reputation. Both produce editable folders and ZIP downloads. They are playable foundations, not native binaries or AAA games. A small phrase scan flags selected franchise references for review; it does not inspect assets or code and cannot establish legal safety.
 
 ### CLI
 

@@ -102,7 +102,7 @@ function createServer() {
 
   server.registerTool('build_playable_game', {
     title: 'Build playable game download',
-    description: 'Generate an editable, standalone browser racing game from a project blueprint and package it as a ZIP. The build includes local race gameplay, AI rivals, vehicle setup, and an optional authoritative WebSocket room server. It is a playable prototype, not an AAA production or legal clearance.',
+    description: 'Generate an editable browser game and package it as a ZIP from a project blueprint. Built-in adapters support circuit racing with AI rivals and optional WebSocket rooms, and a top-down open-world adventure with exploration, contacts, contracts, and saved reputation. These are playable foundations, not AAA productions or legal clearance.',
     inputSchema: {
       project_path: z.string().min(1).describe('Existing Open Game project folder relative to the configured workspace.'),
       output_path: z.string().min(1).describe('New output folder path relative to the configured workspace. A .zip file is generated beside it.')

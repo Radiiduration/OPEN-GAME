@@ -80,10 +80,10 @@ The repo currently contains:
 - A shared Node core for blueprint normalization, project scaffolds with resumable production status, connected system updates, and dependency-ordered full production-roadmap planning.
 - A CLI entry point for running the Studio, creating a project from a blueprint, editing systems, inspecting, planning, building a playable race game, packaging an exported project from any engine, and launching the race multiplayer server.
 - An MCP server exposing project creation, system addition, the full production roadmap, blueprint reading, a limited originality signal scan, playable racing generation, and generic ZIP packaging for engine exports.
-- A first browser racing game adapter with keyboard vehicle handling, AI rivals, race laps/finish, boost, setup tradeoffs, custom game identity, ZIP packaging, and an optional server-authoritative WebSocket multiplayer package.
+- Browser racing and top-down open-world adventure adapters that produce editable playable game folders and ZIPs; racing includes optional server-authoritative WebSocket rooms.
 - An agent skill for implementing the resulting game in the user's chosen repository and engine.
 
-The first adapter generates browser files and the multiplayer room server; it does not generate Godot/Unity/Unreal scenes, a native desktop/mobile binary, open-world content, deep career content, matchmaking, hosted infrastructure, or production anti-cheat. The generic package operation archives an engine's exported files but does not compile them. Together they prove a bounded prompt-to-download path, not arbitrary AAA generation.
+The adapters generate bounded browser games; they do not generate Godot/Unity/Unreal scenes, native desktop/mobile binaries, studio-scale worlds, deep authored campaigns, matchmaking, hosted infrastructure, or production anti-cheat. The generic package operation archives an engine's exported files but does not compile them. Together they provide real prompt-to-playable-download paths for two genres, not arbitrary AAA generation.
 
 ## Safety and project boundaries
 
