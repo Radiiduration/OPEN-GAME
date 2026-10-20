@@ -45,9 +45,10 @@ node src/cli/main.js inspect --project ./my-game
 node src/cli/main.js plan --project ./my-game
 node src/cli/main.js review --project ./my-game
 node src/cli/main.js build --project ./my-game --output ./dist/my-game
+node src/cli/main.js package --project ./engine-project/build --output ./dist/download.zip
 ```
 
-Project paths are confined to the current working directory. The generated project includes a versioned `open-game.json`, game design document, milestone plan, and asset provenance ledger. `build` creates `./dist/my-game/` and `./dist/my-game.zip`. Open the output folder's `index.html` to play.
+Project paths are confined to the current working directory. The generated project includes a versioned `open-game.json`, game design document, full milestone plan, persistent build status, and asset provenance ledger. `build` creates `./dist/my-game/` and `./dist/my-game.zip` for the racing adapter. `package` zips an existing export from any engine; it packages files but does not compile them.
 
 To build the included original racing example from end to end, use `examples/coastal-grand-prix.json`:
 
@@ -68,7 +69,7 @@ Players open the generated `index.html`, choose Online Lobby, and connect to `ws
 
 ### MCP server
 
-Run `npm run mcp` as a local stdio MCP server. Set `OPEN_GAME_WORKSPACE` to the directory where generated game project folders may be created. The MCP tools create a design scaffold and persistent build handoff, add a system, return the complete dependency-ordered production roadmap plus first-slice acceptance criteria, read the blueprint, run a narrow originality signal scan, and build the playable browser racing package. The `build_playable_game` operation generates a ZIP from an existing Open Game project. The coding agent then implements and verifies the remaining requested systems in the chosen engine.
+Run `npm run mcp` as a local stdio MCP server. Set `OPEN_GAME_WORKSPACE` to the directory where generated game project folders may be created. The MCP tools create a design scaffold and persistent build handoff, add a system, return the complete dependency-ordered production roadmap plus first-slice acceptance criteria, read the blueprint, run a narrow originality signal scan, build the playable browser racing package, and package an exported game from any engine as a ZIP. The generic package tool packages existing files; compilation and launch verification remain engine-specific agent tasks.
 
 See [MCP setup](docs/mcp-setup.md) for the connection configuration and tool list. The overall design is described in [platform architecture](docs/architecture.md). The [working-model drawing](docs/open-game-working-model.svg) shows the prompt-to-build loop.
 

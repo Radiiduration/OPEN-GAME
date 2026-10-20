@@ -4,7 +4,7 @@ import * as z from 'zod/v4';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { addGameSystem, assessOriginality, createGameProject, planVerticalSlice, readGameProject } from '../core/project.js';
-import { buildGame } from '../game/build.js';
+import { buildGame, packageGameDownload } from '../game/build.js';
 
 const workspacePath = process.env.OPEN_GAME_WORKSPACE || process.cwd();
 
@@ -109,6 +109,18 @@ function createServer() {
     }
   }, async input => {
     try { return result(await buildGame({ workspacePath, projectPath: input.project_path, outputPath: input.output_path })); }
+    catch (error) { return failure(error); }
+  });
+
+  server.registerTool('package_game_download', {
+    title: 'Package an exported game for download',
+    description: 'Create a ZIP download from a game source or exported build folder produced by any engine adapter. Excludes common repository/dependency caches. This packages existing files; it does not compile the game.',
+    inputSchema: {
+      project_path: z.string().min(1).describe('Game project or exported build folder relative to the configured workspace.'),
+      output_path: z.string().min(1).describe('New ZIP file path outside the folder being packaged.')
+    }
+  }, async input => {
+    try { return result(await packageGameDownload({ workspacePath, projectPath: input.project_path, outputPath: input.output_path })); }
     catch (error) { return failure(error); }
   });
 

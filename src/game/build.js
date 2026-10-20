@@ -27,12 +27,32 @@ async function collectFiles(directory, base = '') {
   const output = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const full = path.join(directory, entry.name); const relative = path.posix.join(base, entry.name);
-    if (entry.isDirectory()) output.push(...await collectFiles(full, relative));
-    else if (entry.isFile()) output.push({ name: relative, data: await readFile(full) });
+    if (entry.isDirectory() && !['.git', 'node_modules', '.godot', '__pycache__'].includes(entry.name)) output.push(...await collectFiles(full, relative));
+    else if (entry.isFile() && entry.name !== '.DS_Store' && !entry.name.endsWith('.log')) output.push({ name: relative, data: await readFile(full) });
   }
   return output;
 }
 function safeJson(value) { return JSON.stringify(value).replace(/</g, '\\u003c'); }
+
+export async function packageGameDownload({ workspacePath = process.cwd(), projectPath, outputPath }) {
+  if (!projectPath || !outputPath) throw new Error('Both projectPath and outputPath are required.');
+  const sourceDir = await resolveWorkspaceDestination(workspacePath, projectPath);
+  const sourceStat = await lstat(sourceDir);
+  if (!sourceStat.isDirectory()) throw new Error('projectPath must point to an exported game/build folder.');
+  const archivePath = await resolveWorkspaceDestination(workspacePath, outputPath);
+  if (path.extname(archivePath).toLowerCase() !== '.zip') throw new Error('outputPath must end in .zip.');
+  const relativeArchive = path.relative(sourceDir, archivePath);
+  if (!relativeArchive.startsWith('..') && !path.isAbsolute(relativeArchive)) throw new Error('The ZIP output must be outside the folder being packaged.');
+  try { await lstat(archivePath); throw new Error(`Output already exists: ${archivePath}`); }
+  catch (error) { if (error.code !== 'ENOENT') throw error; }
+  const entries = await collectFiles(sourceDir);
+  if (!entries.length) throw new Error('The game/build folder is empty.');
+  if (entries.length >= 0xffff || entries.some(entry => entry.data.length > 0xffffffff)) throw new Error('This built-in ZIP writer supports fewer than 65,535 files and individual files under 4 GiB.');
+  const archive = zipBuffer(entries);
+  await mkdir(path.dirname(archivePath), { recursive: true });
+  await writeFile(archivePath, archive, { flag: 'wx' });
+  return { sourceFolder: sourceDir, downloadZip: archivePath, files: entries.length, bytes: archive.length, excluded: ['.git', 'node_modules', '.godot', '__pycache__', '.DS_Store', '*.log'] };
+}
 
 export async function buildGame({ workspacePath = process.cwd(), projectPath, outputPath }) {
   if (!projectPath || !outputPath) throw new Error('Both projectPath and outputPath are required.');

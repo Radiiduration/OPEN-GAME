@@ -77,13 +77,13 @@ The release pipeline produces the engine source plus platform-specific downloada
 The repo currently contains:
 
 - A static browser Studio for creating and exporting a game blueprint.
-- A shared Node core for blueprint normalization, project scaffold creation, connected system updates, and dependency-ordered vertical-slice planning.
-- A CLI entry point for running the Studio, creating a project from a blueprint, editing systems, inspecting, planning, building a playable race game, and launching its multiplayer server.
-- An MCP server exposing project creation, system addition, slice planning, blueprint reading, a limited originality signal scan, and playable game generation.
+- A shared Node core for blueprint normalization, project scaffolds with resumable production status, connected system updates, and dependency-ordered full production-roadmap planning.
+- A CLI entry point for running the Studio, creating a project from a blueprint, editing systems, inspecting, planning, building a playable race game, packaging an exported project from any engine, and launching the race multiplayer server.
+- An MCP server exposing project creation, system addition, the full production roadmap, blueprint reading, a limited originality signal scan, playable racing generation, and generic ZIP packaging for engine exports.
 - A first browser racing game adapter with keyboard vehicle handling, AI rivals, race laps/finish, boost, setup tradeoffs, custom game identity, ZIP packaging, and an optional server-authoritative WebSocket multiplayer package.
 - An agent skill for implementing the resulting game in the user's chosen repository and engine.
 
-The first adapter generates browser files and the multiplayer room server; it does not generate Godot/Unity/Unreal scenes, a native desktop/mobile binary, open-world content, deep career content, matchmaking, hosted infrastructure, or production anti-cheat. It proves a bounded idea-to-download path, not arbitrary AAA generation.
+The first adapter generates browser files and the multiplayer room server; it does not generate Godot/Unity/Unreal scenes, a native desktop/mobile binary, open-world content, deep career content, matchmaking, hosted infrastructure, or production anti-cheat. The generic package operation archives an engine's exported files but does not compile them. Together they prove a bounded prompt-to-download path, not arbitrary AAA generation.
 
 ## Safety and project boundaries
 

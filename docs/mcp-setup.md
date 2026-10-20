@@ -30,9 +30,10 @@ Restart or reconnect the agent after changing its MCP configuration. The model s
 
 - `create_game_project`: create a design scaffold from an original game brief.
 - `add_game_system`: add a system with dependencies and shared inputs/outputs.
-- `plan_game_vertical_slice`: order systems and describe acceptance criteria for the first slice.
+- `plan_game_vertical_slice`: return the full production roadmap, dependency order, and first-slice acceptance criteria.
 - `read_game_blueprint`: load the current project contract for continued work.
 - `build_playable_game`: create an editable browser racing game folder and adjacent ZIP download from a project blueprint.
+- `package_game_download`: package an exported source/build folder from any engine as a ZIP; this does not compile the project.
 - `review_game_originality`: flag a narrow set of commercial game name patterns in selected blueprint text for human review. This is not legal advice or a safety certificate.
 
 The server confines project paths to `OPEN_GAME_WORKSPACE`. Game project creation makes new folders; game builds also make new output folders and do not overwrite existing paths. The first build adapter targets browser play and local/friends WebSocket rooms. Other engines and production online infrastructure are separate future adapters.

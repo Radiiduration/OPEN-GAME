@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { addGameSystem, assessOriginality, createGameProject, planVerticalSlice, readGameProject, resolveWorkspaceDestination } from '../core/project.js';
-import { buildGame } from '../game/build.js';
+import { buildGame, packageGameDownload } from '../game/build.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const args = process.argv.slice(2);
@@ -16,7 +16,7 @@ function option(name, fallback = undefined) {
 }
 
 function help() {
-  console.log(`Open Game CLI\n\nCommands:\n  open-game studio [--port 4173]\n  open-game create --blueprint <file.json> --output <project-folder>\n  open-game add-system --project <folder> --name <name> [--purpose <text>]\n  open-game plan --project <folder>  (full roadmap + playable-slice criteria)\n  open-game inspect --project <folder>\n  open-game review --project <folder>\n  open-game build --project <folder> --output <playable-folder>\n  open-game multiplayer --project <playable-folder>\n  open-game mcp\n\nProject paths are created inside or resolved relative to the current working directory.`);
+  console.log(`Open Game CLI\n\nCommands:\n  open-game studio [--port 4173]\n  open-game create --blueprint <file.json> --output <project-folder>\n  open-game add-system --project <folder> --name <name> [--purpose <text>]\n  open-game plan --project <folder>  (full roadmap + playable-slice criteria)\n  open-game inspect --project <folder>\n  open-game review --project <folder>\n  open-game build --project <folder> --output <playable-folder>\n  open-game package --project <exported-build-folder> --output <download.zip>\n  open-game multiplayer --project <playable-folder>\n  open-game mcp\n\nProject paths are created inside or resolved relative to the current working directory.`);
 }
 
 async function serveStudio() {
@@ -66,6 +66,11 @@ async function main() {
   }
   if (command === 'build' || command === 'build-game') {
     const result = await buildGame({ workspacePath: process.cwd(), projectPath: option('--project'), outputPath: option('--output') });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+  if (command === 'package') {
+    const result = await packageGameDownload({ workspacePath: process.cwd(), projectPath: option('--project'), outputPath: option('--output') });
     console.log(JSON.stringify(result, null, 2));
     return;
   }
