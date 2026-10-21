@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b100f" />
+    <meta name="description" content="Open Game gives coding agents a structured workflow and tools to turn original game briefs into editable engine projects." />
+    <title>Open Game — Build original games with your coding agent</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23c7f36b'/%3E%3Cpath d='M10 22h20M20 10v20M13 13l14 14M27 13 13 27' stroke='%230b100f' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="site.css" />
+    <script src="site.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Open Game home"><span class="brand-mark" aria-hidden="true">✳</span><span>OPEN GAME</span><span class="brand-sub">AGENT TOOLKIT</span></a>
+      <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-nav"><span></span><span></span></button>
+      <nav id="site-nav" class="nav-links" aria-label="Main navigation">
+        <a href="#install">Get started</a>
+        <a href="#workflow">How it works</a>
+        <a href="#toolkit">Tooling</a>
+        <a href="#guides">Guides</a>
+        <a href="../studio.html">Studio</a>
+        <a href="https://github.com/Radiiduration/OPEN-GAME/releases">Releases ↗</a>
+        <a class="nav-github" href="https://github.com/Radiiduration/OPEN-GAME">GitHub ↗</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero section-wrap" id="top">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> YOUR CODING AGENT. YOUR GAME.</div>
+          <h1>Make the game<br />you <em>can’t stop</em><br />thinking about.</h1>
+          <p class="hero-lede">Open Game gives coding agents a structured path from your original idea to editable engine files, playable builds, and the next iteration.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#install">Install Open Game <span>↓</span></a>
+            <a class="button button-quiet" href="#workflow">See how it works <span>↘</span></a>
+          </div>
+        <div class="hero-meta"><span class="pulse-dot"></span> Public repository · Node.js 20+ · Works with your coding agent</div>
+        </div>
+        <div class="hero-art" aria-label="A systems diagram showing a game brief moving through agent tools into an engine project" role="img">
+          <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+          <div class="orbit-label label-brief">YOUR BRIEF</div><div class="orbit-label label-agent">CODING AGENT</div><div class="orbit-label label-engine">GAME ENGINE</div>
+          <div class="hero-core"><span>OG</span><i>OPEN<br />GAME</i></div>
+          <div class="node node-studio"><span>01</span><strong>STUDIO</strong><small>shape the idea</small></div>
+          <div class="node node-tools"><span>02</span><strong>CLI + MCP</strong><small>project operations</small></div>
+          <div class="node node-build"><span>03</span><strong>BUILD LOOP</strong><small>run · learn · refine</small></div>
+          <div class="hero-art-foot"><span>IDEA → SOURCE → PLAY</span><span class="art-coordinate">OPEN GAME / 001</span></div>
+        </div>
+      </section>
+
+      <section class="install-band" id="install">
+        <div class="section-wrap install-layout">
+          <div class="install-intro">
+            <div class="eyebrow"><span class="eyebrow-line"></span> GET STARTED</div>
+            <h2>One install.<br /><em>Your agent’s workflow.</em></h2>
+            <p>Install the CLI from GitHub, check your local tools, and open the Blueprint Studio. The MCP server connects the same project tools to your coding agent.</p>
+            <div class="prereq"><span>BEFORE YOU START</span><p>Git · Node.js 20 or newer · a coding agent. Game engines are optional until you build a project that needs one.</p></div>
+          </div>
+          <div class="terminal-card">
+            <div class="terminal-top"><div class="window-dots"><i></i><i></i><i></i></div><span>TERMINAL / INSTALL</span><button class="copy-button" data-copy="install-command" aria-label="Copy install commands">COPY</button></div>
+            <pre><code id="install-command">npm install --global git+https://github.com/Radiiduration/OPEN-GAME.git#master
+open-game doctor
+open-game studio</code></pre>
+            <div class="terminal-result"><span class="terminal-check">✓</span><span>Studio opens at <code>http://127.0.0.1:4173</code></span></div>
+            <p class="terminal-note">This installs Open Game directly from GitHub. A versioned npm registry package has not been published yet; tagged GitHub releases are listed on the Releases page.</p>
+            <p class="terminal-note"><a class="text-link" href="https://github.com/Radiiduration/OPEN-GAME/blob/master/docs/install.md">Full install + agent setup guide ↗</a></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="steps section-wrap" id="workflow">
+        <div class="section-heading">
+          <div><div class="eyebrow"><span class="eyebrow-line"></span> THE WORKFLOW</div><h2>From a brief to a<br /><em>build you can inspect.</em></h2></div>
+          <p>Open Game is the toolbelt and production guide. Your connected coding LLM does the game-specific design and implementation.</p>
+        </div>
+        <div class="workflow-diagram">
+          <div class="workflow-label">OPEN GAME / CREATOR-TO-BUILD FLOW</div>
+          <div class="workflow-row">
+            <article class="flow-card"><span class="flow-index">01 / DEFINE</span><div class="flow-icon">✳</div><h3>Your brief</h3><p>Describe the game, original characters, world, target platform, and multiplayer needs.</p></article>
+            <div class="flow-arrow" aria-hidden="true">→</div>
+            <article class="flow-card"><span class="flow-index">02 / SHAPE</span><div class="flow-icon">⌘</div><h3>Studio + skill</h3><p>Export a blueprint or build brief. The Open Game Creator skill gives your agent a full implementation contract.</p></article>
+            <div class="flow-arrow" aria-hidden="true">→</div>
+            <article class="flow-card"><span class="flow-index">03 / IMPLEMENT</span><div class="flow-icon">{ }</div><h3>Agent + tools</h3><p>The LLM edits real project files using the shared core, CLI, and MCP operations.</p></article>
+            <div class="flow-arrow" aria-hidden="true">→</div>
+            <article class="flow-card"><span class="flow-index">04 / ITERATE</span><div class="flow-icon">↗</div><h3>Build + play</h3><p>Inspect the engine, build, run, fix observed issues, record evidence, and package supported outputs.</p></article>
+          </div>
+          <div class="engine-lane"><span class="lane-title">ENGINE TARGETS</span><span>Godot</span><b>·</b><span>Unity</span><b>·</b><span>Unreal</span><span class="lane-footnote">Initial adapters; each operation depends on the installed engine and configured project.</span></div>
+        </div>
+        <a class="text-link" href="https://github.com/Radiiduration/OPEN-GAME/blob/master/docs/open-game-working-model.svg">Open the full architecture drawing ↗</a>
+      </section>
+
+      <section class="capabilities section-wrap" id="toolkit">
+        <div class="section-heading compact-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> THE TOOLKIT</div><h2>One workflow.<br /><em>Useful entry points.</em></h2></div></div>
+        <div class="capability-grid">
+          <article class="capability-card"><span class="cap-number">A</span><div><h3>Blueprint Studio</h3><p>Capture a game vision and export a structured blueprint or agent-ready brief.</p><a href="../studio.html">Open Studio ↗</a></div></article>
+          <article class="capability-card"><span class="cap-number">B</span><div><h3>Open Game Creator skill</h3><p>Guide an agent through the real project, connected systems, implementation, build, play, and continuation record.</p><a href="https://github.com/Radiiduration/OPEN-GAME/tree/master/skills/open-game-creator">Read the skill ↗</a></div></article>
+          <article class="capability-card"><span class="cap-number">C</span><div><h3>CLI + MCP</h3><p>Inspect tools, create project handoffs, plan systems, track obligations, run supported engine operations, and package exports.</p><a href="https://github.com/Radiiduration/OPEN-GAME/blob/master/docs/mcp-setup.md">Connect MCP ↗</a></div></article>
+          <article class="capability-card"><span class="cap-number">D</span><div><h3>Build adapters</h3><p>Use available project integrations for engine builds and scenarios. Check requirements and limits before selecting a target.</p><a href="https://github.com/Radiiduration/OPEN-GAME/blob/master/docs/reliability-contract.md">View support levels ↗</a></div></article>
+        </div>
+      </section>
+
+      <section class="agent-setup" id="connect">
+        <div class="section-wrap agent-layout">
+          <div><div class="eyebrow"><span class="eyebrow-line"></span> CONNECT YOUR AGENT</div><h2>Bring the workflow<br />to <em>your coding agent.</em></h2><p>Run the local MCP server over stdio and add it to the MCP configuration supported by your agent. Set a workspace folder where projects may be created, then restart the agent.</p><a class="text-link" href="https://github.com/Radiiduration/OPEN-GAME/blob/master/docs/mcp-setup.md">Read setup steps for the MCP server ↗</a></div>
+          <div class="config-card"><div class="terminal-top"><div class="window-dots"><i></i><i></i><i></i></div><span>MCP CONFIG / EXAMPLE</span><button class="copy-button" data-copy="mcp-config" aria-label="Copy MCP configuration">COPY</button></div><pre><code id="mcp-config">{
+  "mcpServers": {
+    "open-game": {
+      "command": "open-game",
+      "args": ["mcp"],
+      "env": {
+        "OPEN_GAME_WORKSPACE": "/absolute/path/to/game-projects"
+      }
+    }
+  }
+}</code></pre><p>Use an absolute path for your own workspace. The server creates projects only inside that configured folder.</p></div>
+        </div>
+      </section>
+
+      <section class="community section-wrap" id="community">
+        <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> OPEN DEVELOPMENT</div><h2>Built by creators.<br /><em>Improved in public.</em></h2></div><p>Follow releases, inspect the source, report problems, and help shape the tools. Open Game is an independent community project.</p></div>
+        <div class="guide-links community-links"><a href="https://github.com/Radiiduration/OPEN-GAME">About the repository <span>↗</span></a><a href="https://github.com/Radiiduration/OPEN-GAME/releases">Release notes + downloads <span>↗</span></a><a href="https://github.com/Radiiduration/OPEN-GAME/issues">Issues + feature requests <span>↗</span></a><a href="https://github.com/Radiiduration/OPEN-GAME#contributing">Contribute to Open Game <span>↗</span></a></div>
+      </section>
+
+      <section class="release section-wrap" id="releases">
+        <div class="release-main"><div class="eyebrow"><span class="eyebrow-line"></span> RELEASES</div><h2>Built in the open.<br /><em>Shipped with notes.</em></h2><p>Use the GitHub release page for tagged versions and attached package archives. Until a versioned release is published, install directly from the repository using the command above.</p><div class="hero-actions"><a class="button button-primary" href="https://github.com/Radiiduration/OPEN-GAME/releases">View GitHub releases <span>↗</span></a><a class="button button-quiet" href="https://github.com/Radiiduration/OPEN-GAME/issues">Report an issue <span>↗</span></a></div></div>
+        <div class="release-side"><div class="release-row"><span class="release-tag">SOURCE</span><div><strong>Open Game repository</strong><small>CLI · Studio · skill · MCP · docs</small></div><span class="row-arrow">↗</span></div><div class="release-row"><span class="release-tag release-tag-lime">PACKAGE</span><div><strong>CLI tarball</strong><small>Build locally with <code>npm run package:release</code></small></div><span class="row-arrow">⌁</span></div><div class="release-caveat">A package install gives you Open Game’s tooling, not a game-making model or engine. Game builds still depend on your coding agent and installed toolchain. See the <a href="https://github.com/Radiiduration/OPEN-GAME/blob/master/docs/publish-website.md">release and publishing guide ↗</a>.</div></div>
+      </section>
+
+      <section class="faq section-wrap" id="guides">
+        <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> GUIDES + FAQ</div><h2>Clear about what<br /><em>it does today.</em></h2></div><p>Start with the docs, check the limits, and use the tools that fit your environment.</p></div>
+        <div class="faq-grid">
+          <details><summary>Does Open Game generate any finished game from one prompt?</summary><p>No. A creator's brief starts an end-to-end coding-agent task. The connected LLM implements the game, and scope, quality, assets, and builds depend on that agent and its environment.</p></details>
+          <details><summary>Is the LLM included in this package?</summary><p>No. Open Game supplies the agent workflow and project tools. Use your own coding agent and configure its model/provider separately.</p></details>
+          <details><summary>Which engines can I use?</summary><p>The project schema is engine-neutral and current adapters include initial Godot, Unity, and Unreal operations. Build support is partial and depends on the engine, export tools, presets, and project configuration.</p></details>
+          <details><summary>Does Open Game provide online multiplayer hosting?</summary><p>No. The toolkit can represent multiplayer requirements and includes a bounded example server. It does not provision production matchmaking, identity, cloud saves, or hosting.</p></details>
+          <details><summary>Can it make a copyright-safe clone?</summary><p>Open Game supports original projects inspired by broad genres. No scan or workflow can promise legal safety; use original or properly licensed material.</p></details>
+          <details><summary>How do I contribute or get support?</summary><p>Read the contribution notes in the repository README, open an issue, and include your environment and exact command output where relevant.</p></details>
+        </div>
+        <div class="guide-links"><a href="https://github.com/Radiiduration/OPEN-GAME/blob/master/docs/how-open-game-works.md">How Open Game works <span>↗</span></a><a href="https://github.com/Radiiduration/OPEN-GAME/blob/master/docs/architecture.md">Platform architecture <span>↗</span></a><a href="https://github.com/Radiiduration/OPEN-GAME/blob/master/docs/agent-ready-engine-adapter-contract.md">Engine adapter contract <span>↗</span></a><a href="https://github.com/Radiiduration/OPEN-GAME#contributing">Contributing <span>↗</span></a></div>
+      </section>
+
+      <section class="closing section-wrap">
+        <div class="closing-mark" aria-hidden="true">✳</div><div><div class="eyebrow">START WITH YOUR IDEA</div><h2>Give your agent<br />a better way to build.</h2></div><a class="button button-primary" href="https://github.com/Radiiduration/OPEN-GAME">Open the repository <span>↗</span></a>
+      </section>
+    </main>
+
+    <footer class="footer section-wrap"><a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">✳</span><span>OPEN GAME</span></a><p>Original games. Real project files. Iterative builds.</p><div><a href="https://github.com/Radiiduration/OPEN-GAME">GitHub</a><a href="https://github.com/Radiiduration/OPEN-GAME/releases">Releases</a><a href="https://github.com/Radiiduration/OPEN-GAME/issues">Issues</a><a href="privacy.html">Privacy</a><a href="../studio.html">Studio</a></div><small>Open Game is a community project. Engine builds and project outcomes vary by tools and scope.</small></footer>
+    <div class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

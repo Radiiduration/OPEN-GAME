@@ -3,6 +3,32 @@
   "version": "0.2.0",
   "description": "Agent-ready toolkit for creating original, systems-rich games.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Radiiduration/OPEN-GAME.git"
+  },
+  "homepage": "https://github.com/Radiiduration/OPEN-GAME#readme",
+  "bugs": {
+    "url": "https://github.com/Radiiduration/OPEN-GAME/issues"
+  },
+  "keywords": [
+    "game-development",
+    "ai-agents",
+    "coding-agent",
+    "mcp",
+    "game-toolkit"
+  ],
+  "files": [
+    "src/",
+    "scripts/",
+    "skills/open-game-creator/",
+    "docs/",
+    "examples/",
+    "studio.html",
+    "app.css",
+    "app.js",
+    "README.md"
+  ],
   "engines": {
     "node": ">=20"
   },
@@ -13,7 +39,9 @@
     "studio": "node src/cli/main.js studio",
     "mcp": "node src/mcp/server.js",
     "build-game": "node src/cli/main.js build",
-    "multiplayer": "node src/cli/main.js multiplayer"
+    "multiplayer": "node src/cli/main.js multiplayer",
+    "website": "node scripts/serve-website.js",
+    "package:release": "node scripts/package-release.js"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.3.1",

@@ -24,8 +24,8 @@ function help() {
 async function serveStudio() {
   const port = Number(option('--port', '4173'));
   const allowed = new Map([
-    ['/', ['index.html', 'text/html; charset=utf-8']],
-    ['/index.html', ['index.html', 'text/html; charset=utf-8']],
+    ['/', ['studio.html', 'text/html; charset=utf-8']],
+    ['/index.html', ['studio.html', 'text/html; charset=utf-8']],
     ['/app.css', ['app.css', 'text/css; charset=utf-8']],
     ['/app.js', ['app.js', 'text/javascript; charset=utf-8']]
   ]);

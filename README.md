@@ -1,5 +1,7 @@
 # Open Game
 
+**Website:** [opengame-ecru.vercel.app](https://opengame-ecru.vercel.app/) · [Install + setup](docs/install.md) · [Releases](https://github.com/Radiiduration/OPEN-GAME/releases) · [Privacy](docs/privacy.html)
+
 **Dream big. Build original games with depth.**
 
 Open Game is an **agent-ready game creation repo**. Load it into a coding LLM, describe the game you want, and use its creator workflow to plan and build an original game in real project files. The ambition is substantial games with connected systems—a large world, deep driving or movement, missions, characters, progression, simulation, and a distinctive story—not just tiny arcade demos.
@@ -34,6 +36,18 @@ The repo combines an agent-facing **Open Game Creator** skill, a visual **Game B
 ![Open Game architecture: a creator brief flows through the Studio, shared project tools, and a connected coding LLM into an editable engine project, then through build and play feedback](docs/open-game-working-model.svg)
 
 The Studio turns a creator's original idea into a structured blueprint or LLM build brief. The Open Game Creator skill guides a connected coding LLM; the shared core, CLI, and MCP server provide project operations and progress records. The LLM writes the actual game in an appropriate engine, then uses the available build, run, and packaging tools to iterate toward a playable download. Engine support depends on the installed toolchain; the repo is not itself an autonomous game model or universal one-click compiler.
+
+### Install the toolkit
+
+Install the current CLI package directly from GitHub, then inspect the engines and tools on your machine:
+
+```sh
+npm install --global git+https://github.com/Radiiduration/OPEN-GAME.git#master
+open-game doctor
+open-game studio
+```
+
+Use `open-game mcp` to run the MCP server for your coding agent. See the complete [installation and agent connection guide](docs/install.md). The GitHub Pages-ready website lives in `docs/`; [publishing steps](docs/publish-website.md) and local preview via `npm run website` are documented there. Build a versioned CLI tarball with `npm run package:release`; this creates an artifact but does not publish it to npm.
 
 ### Current working build
 
@@ -187,7 +201,7 @@ Do not claim to generate a finished AAA game in one click. Do not begin with use
 ```text
 open-game/
 ├── README.md                 # Project overview and getting started
-├── index.html                # Current Blueprint Studio prototype
+├── studio.html               # Browser Blueprint Studio
 ├── app.css
 ├── app.js
 ├── package.json
@@ -196,6 +210,8 @@ open-game/
 │   └── open-game-creator/
 │       └── SKILL.md
 ├── docs/
+│   ├── index.html             # Open Game project website
+│   ├── privacy.html           # Website and local-tool privacy notice
 │   ├── architecture.md
 │   ├── game-generation-architecture.md
 │   ├── llm-workflow.md

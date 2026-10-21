@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/", "destination": "/docs/index.html" },
+    { "source": "/index.html", "destination": "/docs/index.html" },
+    { "source": "/privacy", "destination": "/docs/privacy.html" },
+    { "source": "/privacy.html", "destination": "/docs/privacy.html" },
+    { "source": "/site.css", "destination": "/docs/site.css" },
+    { "source": "/site.js", "destination": "/docs/site.js" },
+    { "source": "/studio", "destination": "/studio.html" }
+  ]
+}

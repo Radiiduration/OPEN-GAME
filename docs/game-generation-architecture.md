@@ -125,7 +125,7 @@ Automated similarity or metadata checks may flag content for a creator to review
 
 ## Current implementation and next build steps
 
-The browser Studio in `index.html`, `app.css`, and `app.js` currently supports:
+The browser Studio in `studio.html`, `app.css`, and `app.js` currently supports:
 
 - A creator brief, genre, tone, and three ambition levels.
 - Selecting built-in systems and adding creator-defined systems.
