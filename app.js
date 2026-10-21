@@ -95,6 +95,21 @@ function downloadBlueprint() {
   notify('Blueprint exported as JSON.');
 }
 
+function downloadAgentBrief() {
+  const blueprint = renderBlueprint();
+  const payload = JSON.stringify(blueprint, null, 2);
+  const brief = `# Build this game in the open project\n\nYou are the coding agent working in the Open Game repository. Read its root AGENTS.md and skills/open-game-creator/SKILL.md first, then implement this creator's game in real, editable project files. The initial brief authorizes implementation, building, packaging, and verification; do not stop at a pitch, scaffold, or first playable slice while more work is possible.\n\n## Required execution\n\n1. Inspect the existing project, installed engines/SDKs, and available asset tools. Preserve existing creator work.\n2. Use the full blueprint below as the source of truth. Keep the requested characters/world and invent original expression for anything unspecified.\n3. Select a target that fits the game and this environment. Do not silently replace a native/3D request with a browser demo. Record exact missing dependencies.\n4. Implement the connected game systems in actual engine code, in dependency order. Make the core loop playable, then continue implementing the remaining systems, content, and requested multiplayer.\n5. Build and launch the game, exercise the implemented behaviors, inspect failures, and fix them. Package the source and playable target when possible.\n6. Update OPEN_GAME_STATUS.md with exact commands/results, artifacts, remaining acceptance criteria, blockers, and the next concrete task. Never report planned or unrun work as verified.\n\nA successful build does not by itself establish AAA quality, production readiness, or legal clearance. Use original or properly licensed material and record asset provenance.\n\n## Creator blueprint\n\n~~~json\n${payload}\n~~~\n`;
+  const blob = new Blob([brief], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  const safeTitle = blueprint.game.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'open-game';
+  link.download = `${safeTitle}-llm-build-brief.md`;
+  link.click();
+  URL.revokeObjectURL(url);
+  notify('LLM build brief exported. Give it to a coding agent with this repository open.');
+}
+
 scopeButtons.forEach(button => button.addEventListener('click', () => {
   scope = button.dataset.scope;
   scopeButtons.forEach(option => option.classList.toggle('selected', option === button));
@@ -114,6 +129,7 @@ form.addEventListener('submit', event => {
 });
 
 document.querySelector('#exportButton').addEventListener('click', downloadBlueprint);
+document.querySelector('#exportAgentButton').addEventListener('click', downloadAgentBrief);
 
 document.querySelector('#saveButton').addEventListener('click', () => {
   const draft = {

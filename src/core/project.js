@@ -166,6 +166,60 @@ function makeStatusDoc(blueprint) {
   return `# ${blueprint.game.title}: implementation status\n\n## Destination\n\n${blueprint.game.pitch}\n\n## Target\n\n- Requested platform: ${blueprint.game.targetPlatform}\n- Engine: not selected; inspect this environment and choose a buildable target.\n- Full requested systems: see [production plan](docs/MILESTONES.md).\n\n## Progress\n\n- Blueprint and production plan: created.\n- Engine implementation: not started.\n- Latest verified build: none.\n- Known external blockers: none identified yet.\n\n## Next concrete task\n\nInspect the repository and installed engine toolchains, select the actual game target, then implement and build the first playable milestone. After it works, continue through the remaining planned systems instead of stopping at the slice.\n\nUpdate this file with real evidence after each build; never mark an unrun build as verified.\n`;
 }
 
+function makeReferenceStudyDoc(blueprint) {
+  return `# ${blueprint.game.title}: reference study\n\nThis is an optional, evidence-led design input. The creator's original brief remains authoritative. Do not copy a reference game's code, assets, maps, characters, story, branding, distinctive UI, or proprietary data.\n\n## Study scope\n\n- Reference title/version/platform: not selected\n- Creator-authorized target or observation source: not selected\n- Experience qualities to study: not specified\n- REA MCP available to the implementing agent: confirm at build time\n- Status: not started\n\n## Evidence ledger\n\nKeep each claim separate and cite exact REA Evidence IDs or public source links. Preserve coverage limits.\n\n| ID | Type (observed / inferred / unknown) | Claim or behavior | Evidence ID / source and version | Limitation / confidence |\n| --- | --- | --- | --- | --- |\n\n## Translation into this game's original design\n\nFor each desired quality, record a distinct requirement, original mechanic/content choice, owner system ID, and acceptance scenario. Do not turn unknown proprietary internals into implementation requirements.\n\n| Quality | Original requirement | System ID | Acceptance scenario |\n| --- | --- | --- | --- |\n\n## Unknowns and boundaries\n\n- Unknown internal details:\n- Out-of-scope material:\n- Creator-provided original characters/world that must be preserved:\n\nREA is an optional analysis toolkit, not a game generator. Each creator must connect it in the coding agent that builds this project. If no authorized target or REA tools are available, use public developer sources and creator observations and label inferences clearly.\n`;
+}
+
+function makeImplementationObligations(blueprint) {
+  const systemEntries = blueprint.systems.map(system => ({
+    id: `system:${system.id}`,
+    kind: 'game-system',
+    title: system.name,
+    systemId: system.id,
+    required: true,
+    applicability: 'required',
+    status: 'needs-agent-refinement',
+    requirement: system.purpose,
+    sourceRefs: [{ kind: 'blueprint-system', id: system.id }],
+    dependencies: system.dependsOn.map(id => `system:${id}`),
+    acceptanceCriteria: [],
+    verificationEvidence: [],
+    notApplicableReason: ''
+  }));
+  const gate = (id, title, applicability, requirement) => ({
+    id: `quality:${id}`,
+    kind: 'quality-gate',
+    title,
+    systemId: null,
+    required: applicability === 'required',
+    applicability,
+    status: applicability === 'required' ? 'needs-agent-refinement' : 'needs-applicability-review',
+    requirement,
+    sourceRefs: [{ kind: 'game-brief', id: 'open-game.json' }],
+    dependencies: [],
+    acceptanceCriteria: [],
+    verificationEvidence: [],
+    notApplicableReason: ''
+  });
+  const qualityEntries = [
+    gate('core-loop', 'Complete core gameplay loop', 'required', 'The defining player activity has start, success/failure, feedback, and recovery behavior.'),
+    gate('build-launch', 'Target build and launch', 'required', 'Build and launch the selected target; retain exact command, result, logs, and artifact path.'),
+    gate('performance', 'Target performance', 'required', 'Define frame-time, memory, loading, streaming, and network budgets appropriate to the selected hardware, then measure them.'),
+    gate('asset-provenance', 'Asset provenance', 'required', 'Record creator/source, license, modifications, and usage for third-party assets; record generated provenance.'),
+    gate('human-play-review', 'Human play review', 'required', 'Review play feel, readability, pacing, visual coherence, and fun on the stated target; record reviewer and findings.'),
+    gate('save-load', 'Save/load and migration', 'if-persistent-state-is-requested', 'Verify persistence, recovery, and compatibility for the requested player/world state.'),
+    gate('multiplayer', 'Requested multiplayer topology', 'if-multiplayer-is-requested', 'Verify sessions, authority, replication, disconnect/reconnect, persistence, and deployment for the requested player scale.')
+  ];
+  return `${JSON.stringify({
+    format: 'open-game-implementation-obligations',
+    version: 1,
+    projectSlug: blueprint.game.slug,
+    status: 'requires-agent-refinement',
+    instructions: 'Expand every requirement into observable acceptance criteria before implementation. Add reference Evidence IDs to sourceRefs only when the creator supplied an authorized target and REA produced that Evidence. In verificationEvidence, record a passed method and evidenceRefs to the new game build, runtime, profile, or human review. Mark verified only after those checks actually pass. This ledger is a project handoff, not independent proof or an AAA certificate.',
+    obligations: [...systemEntries, ...qualityEntries]
+  }, null, 2)}\n`;
+}
+
 function makeAssetLedger() {
   return 'asset_id,asset_name,creator_or_source,source_url,license,changes,project_usage,review_status\n';
 }
@@ -180,11 +234,25 @@ export async function createGameProject({ workspacePath = process.cwd(), project
   const skillDirectory = path.join(destination, '.agents', 'skills', 'open-game-creator');
   await mkdir(skillDirectory, { recursive: true });
   await copyFile(path.join(openGameRoot, 'skills', 'open-game-creator', 'SKILL.md'), path.join(skillDirectory, 'SKILL.md'));
+  const referenceDirectory = path.join(skillDirectory, 'references');
+  await mkdir(referenceDirectory);
+  const skillReferences = [
+    ['docs/production-playbooks/quality-and-build-gates.md', 'quality-and-build-gates.md'],
+    ['docs/production-playbooks/open-world-action.md', 'open-world-action.md'],
+    ['docs/production-playbooks/racing-simulation.md', 'racing-simulation.md'],
+    ['docs/production-playbooks/multiplayer-networking.md', 'multiplayer-networking.md'],
+    ['docs/production-playbooks/reference-led-game-reconstruction.md', 'reference-led-game-reconstruction.md'],
+    ['docs/agent-ready-engine-adapter-contract.md', 'agent-ready-engine-adapter-contract.md'],
+    ['docs/reverse-engineering/what-public-evidence-can-tell-us.md', 'public-evidence.md']
+  ];
+  await Promise.all(skillReferences.map(([source, name]) => copyFile(path.join(openGameRoot, source), path.join(referenceDirectory, name))));
   await writeFile(path.join(destination, 'open-game.json'), `${JSON.stringify(normalized, null, 2)}\n`, { flag: 'wx' });
-  const agentInstructions = ['# Open Game project instructions', '', 'Read GAME_BRIEF.md first when present, then docs/GAME_DESIGN.md, docs/MILESTONES.md, and OPEN_GAME_STATUS.md. Follow `.agents/skills/open-game-creator/SKILL.md` for the complete production workflow.', 'The creator brief is the destination: implement this original game in the engine and target that best fit it. Use the creator’s specified characters and world.', 'Do not substitute a canned demo or stop after planning or a vertical slice; build, run, package, and continue through the requested systems where the environment permits.', 'Record exact verification and blockers in OPEN_GAME_STATUS.md and open-game-progress.json. Use original or properly licensed assets and update assets/ASSET_LEDGER.csv.'].join('\n');
+  const agentInstructions = ['# Open Game project instructions', '', 'Read GAME_BRIEF.md first when present, then docs/GAME_DESIGN.md, docs/REFERENCE_STUDY.md, docs/IMPLEMENTATION_OBLIGATIONS.json, docs/MILESTONES.md, and OPEN_GAME_STATUS.md. Follow `.agents/skills/open-game-creator/SKILL.md` as the implementation contract.', 'Before implementation, read `.agents/skills/open-game-creator/references/quality-and-build-gates.md`, `agent-ready-engine-adapter-contract.md`, and only the relevant genre playbooks in the same references folder.', 'Before building, refine every applicable entry in docs/IMPLEMENTATION_OBLIGATIONS.json into observable acceptance criteria, dependencies, and a verification method. Keep reference evidence separate from implementation evidence. Mark an item verified only after the described check actually passes; record build/play/profile evidence under verificationEvidence and REA Evidence IDs under sourceRefs only.', 'When a commercial game is named as a reference, follow `.agents/skills/open-game-creator/references/reference-led-game-reconstruction.md`. Use REA only if its MCP tools are available in this agent and the creator supplies or identifies an authorized target. REA must be connected separately in each creator’s LLM agent; this project does not install or configure REA. If REA or a target is unavailable, use public primary sources and creator-provided observations, and label inferences and unknowns.', 'The creator brief is the destination: implement this original game in the engine and target that best fit it. Use the creator’s specified characters and world.', 'Start implementation in this task. Inspect the real project and toolchain, map the requested connected systems and acceptance checks, then write actual engine source files. If the selected free/open-source engine can be provisioned non-interactively with the current host package manager and network, install and verify it; do not change engine silently or install paid/interactive software. Build, launch, observe, and repair each coherent playable increment before continuing through the full requested systems and content.', 'Do not substitute a canned demo or stop after a pitch, blueprint, roadmap, or first playable slice while more implementation is possible. Do not describe planned, mocked, or unverified systems as implemented.', 'If a specific engine dependency, credential, external service, or creator decision blocks work, implement independent parts and record that exact blocker and the action needed to unblock it. Before ending, write the exact verification evidence, artifact paths, remaining acceptance criteria, and next concrete implementation task to OPEN_GAME_STATUS.md and open-game-progress.json.', 'Use original or properly licensed assets and update assets/ASSET_LEDGER.csv. A build or originality scan does not establish AAA quality or legal clearance.'].join('\n');
   await writeFile(path.join(destination, 'AGENTS.md'), `${agentInstructions}\n`, { flag: 'wx' });
-  await writeFile(path.join(destination, 'README.md'), `# ${normalized.game.title}\n\nOriginal game project created with Open Game.\n\n## Current state\n\nThis folder contains the full game vision, agent workflow, dependency-aware production roadmap, resumable progress, and asset ledger. The coding agent should use the original brief to implement the engine project, playable systems, and packaged build; the blueprint itself is not a playable game.\n\n## Design files\n\n- [Game design](docs/GAME_DESIGN.md)\n- [Production skill](.agents/skills/open-game-creator/SKILL.md)\n- [Full production plan](docs/MILESTONES.md)\n- [Implementation status](OPEN_GAME_STATUS.md)\n- [Structured progress record](open-game-progress.json)\n- [Asset provenance](assets/ASSET_LEDGER.csv)\n`, { flag: 'wx' });
+  await writeFile(path.join(destination, 'README.md'), `# ${normalized.game.title}\n\nOriginal game project created with Open Game.\n\n## Current state\n\nThis folder contains the full game vision, agent workflow, dependency-aware production roadmap, resumable progress, and asset ledger. The coding agent should use the original brief to implement the engine project, playable systems, and packaged build; the blueprint itself is not a playable game.\n\n## Design files\n\n- [Game design](docs/GAME_DESIGN.md)\n- [Reference study and evidence ledger](docs/REFERENCE_STUDY.md)\n- [Implementation obligations and quality gates](docs/IMPLEMENTATION_OBLIGATIONS.json)\n- [Agent-ready engine adapter expectations](.agents/skills/open-game-creator/references/agent-ready-engine-adapter-contract.md)\n- [Production skill](.agents/skills/open-game-creator/SKILL.md)\n- [Open-world action playbook](.agents/skills/open-game-creator/references/open-world-action.md)\n- [Racing simulation playbook](.agents/skills/open-game-creator/references/racing-simulation.md)\n- [Multiplayer networking playbook](.agents/skills/open-game-creator/references/multiplayer-networking.md)\n- [Reference-led game reconstruction](.agents/skills/open-game-creator/references/reference-led-game-reconstruction.md)\n- [Evidence limits for commercial references](.agents/skills/open-game-creator/references/public-evidence.md)\n- [Quality and build gates](.agents/skills/open-game-creator/references/quality-and-build-gates.md)\n- [Full production plan](docs/MILESTONES.md)\n- [Implementation status](OPEN_GAME_STATUS.md)\n- [Structured progress record](open-game-progress.json)\n- [Asset provenance](assets/ASSET_LEDGER.csv)\n`, { flag: 'wx' });
   await writeFile(path.join(destination, 'docs', 'GAME_DESIGN.md'), makeDesignDoc(normalized), { flag: 'wx' });
+  await writeFile(path.join(destination, 'docs', 'REFERENCE_STUDY.md'), makeReferenceStudyDoc(normalized), { flag: 'wx' });
+  await writeFile(path.join(destination, 'docs', 'IMPLEMENTATION_OBLIGATIONS.json'), makeImplementationObligations(normalized), { flag: 'wx' });
   if (creatorBrief) await writeFile(path.join(destination, 'GAME_BRIEF.md'), `${creatorBrief.trim()}\n`, { flag: 'wx' });
   await writeFile(path.join(destination, 'docs', 'MILESTONES.md'), makeMilestoneDoc(normalized), { flag: 'wx' });
   await writeFile(path.join(destination, 'assets', 'ASSET_LEDGER.csv'), makeAssetLedger(), { flag: 'wx' });
@@ -195,7 +263,7 @@ export async function createGameProject({ workspacePath = process.cwd(), project
   };
   await writeFile(path.join(destination, 'open-game-progress.json'), `${JSON.stringify(initialProgress, null, 2)}\n`, { flag: 'wx' });
   await writeFile(path.join(destination, 'OPEN_GAME_STATUS.md'), makeStatusDoc(normalized), { flag: 'wx' });
-  return { projectPath: destination, blueprint: normalized, createdFiles: ['open-game.json', 'AGENTS.md', 'README.md', ...(creatorBrief ? ['GAME_BRIEF.md'] : []), '.agents/skills/open-game-creator/SKILL.md', 'docs/GAME_DESIGN.md', 'docs/MILESTONES.md', 'OPEN_GAME_STATUS.md', 'open-game-progress.json', 'assets/ASSET_LEDGER.csv'] };
+  return { projectPath: destination, blueprint: normalized, createdFiles: ['open-game.json', 'AGENTS.md', 'README.md', ...(creatorBrief ? ['GAME_BRIEF.md'] : []), '.agents/skills/open-game-creator/SKILL.md', ...skillReferences.map(([, name]) => `.agents/skills/open-game-creator/references/${name}`), 'docs/GAME_DESIGN.md', 'docs/REFERENCE_STUDY.md', 'docs/IMPLEMENTATION_OBLIGATIONS.json', 'docs/MILESTONES.md', 'OPEN_GAME_STATUS.md', 'open-game-progress.json', 'assets/ASSET_LEDGER.csv'] };
 }
 
 export async function readGameProject({ workspacePath = process.cwd(), projectPath }) {
@@ -203,6 +271,59 @@ export async function readGameProject({ workspacePath = process.cwd(), projectPa
   const destination = await resolveProjectPath(workspacePath, projectPath);
   const text = await readFile(path.join(destination, 'open-game.json'), 'utf8');
   return normalizeBlueprint(JSON.parse(text));
+}
+
+export async function readGameObligations({ workspacePath = process.cwd(), projectPath }) {
+  const destination = await resolveProjectPath(workspacePath, projectPath);
+  return JSON.parse(await readFile(path.join(destination, 'docs', 'IMPLEMENTATION_OBLIGATIONS.json'), 'utf8'));
+}
+
+export async function reviewGameObligations({ workspacePath = process.cwd(), projectPath }) {
+  const [blueprint, ledger] = await Promise.all([
+    readGameProject({ workspacePath, projectPath }),
+    readGameObligations({ workspacePath, projectPath })
+  ]);
+  if (ledger?.format !== 'open-game-implementation-obligations' || ledger.version !== 1 || !Array.isArray(ledger.obligations)) {
+    throw new Error('Implementation obligations file has an unsupported format or is missing its obligations list.');
+  }
+  const allowedStatuses = new Set(['needs-agent-refinement', 'needs-applicability-review', 'planned', 'in-progress', 'blocked', 'implemented', 'verified', 'not-applicable']);
+  const knownSystems = new Set(blueprint.systems.map(system => system.id));
+  const ids = new Set();
+  const diagnostics = [];
+  const entries = ledger.obligations;
+  for (const entry of entries) {
+    if (!entry || typeof entry.id !== 'string' || !entry.id.trim()) {
+      diagnostics.push({ code: 'missing-id', message: 'Every obligation requires a non-empty id.' });
+      continue;
+    }
+    if (ids.has(entry.id)) diagnostics.push({ id: entry.id, code: 'duplicate-id', message: 'Obligation IDs must be unique.' });
+    ids.add(entry.id);
+    if (!allowedStatuses.has(entry.status)) diagnostics.push({ id: entry.id, code: 'invalid-status', message: `Unsupported status: ${entry.status}.` });
+    if (typeof entry.required !== 'boolean') diagnostics.push({ id: entry.id, code: 'invalid-required-flag', message: 'Every obligation must explicitly set required to true or false.' });
+    if (entry.systemId && !knownSystems.has(entry.systemId)) diagnostics.push({ id: entry.id, code: 'unknown-system', message: `Owning system ${entry.systemId} is not in the project blueprint.` });
+    if (!Array.isArray(entry.dependencies)) diagnostics.push({ id: entry.id, code: 'invalid-dependencies', message: 'Dependencies must be an array of obligation IDs.' });
+    if (entry.status === 'verified') {
+      if (!Array.isArray(entry.acceptanceCriteria) || entry.acceptanceCriteria.length === 0) diagnostics.push({ id: entry.id, code: 'verified-without-criteria', message: 'A verified obligation must have acceptance criteria.' });
+      const hasEvidence = Array.isArray(entry.verificationEvidence) && entry.verificationEvidence.some(item => item && typeof item.method === 'string' && item.method.trim() && item.result === 'passed' && Array.isArray(item.evidenceRefs) && item.evidenceRefs.some(ref => typeof ref === 'string' && ref.trim()));
+      if (!hasEvidence) diagnostics.push({ id: entry.id, code: 'verified-without-evidence', message: 'A verified obligation needs a passed result, verification method, and at least one evidence reference.' });
+    }
+    if (entry.status === 'not-applicable' && (entry.required !== false || typeof entry.notApplicableReason !== 'string' || !entry.notApplicableReason.trim())) {
+      diagnostics.push({ id: entry.id, code: 'invalid-not-applicable', message: 'Mark not-applicable only after setting required=false and recording a reason.' });
+    }
+    for (const dependency of Array.isArray(entry.dependencies) ? entry.dependencies : []) {
+      if (typeof dependency !== 'string') diagnostics.push({ id: entry.id, code: 'invalid-dependency', message: 'Dependency IDs must be strings.' });
+      else if (!entries.some(candidate => candidate?.id === dependency)) diagnostics.push({ id: entry.id, code: 'missing-dependency', message: `Dependency ${dependency} does not exist in the ledger.` });
+    }
+  }
+  const incomplete = entries.filter(entry => entry?.status !== 'verified' && entry?.status !== 'not-applicable').map(entry => ({ id: entry?.id || null, title: entry?.title || 'Untitled obligation', status: entry?.status || 'invalid' }));
+  return {
+    project: blueprint.game.title,
+    status: diagnostics.length ? 'ledger-needs-repair' : incomplete.length ? 'incomplete' : 'all-required-obligations-marked-complete',
+    counts: { total: entries.length, markedVerified: entries.filter(entry => entry?.status === 'verified').length, markedNotApplicable: entries.filter(entry => entry?.status === 'not-applicable').length, incomplete: incomplete.length, diagnostics: diagnostics.length },
+    incomplete,
+    diagnostics,
+    limitation: 'This checks ledger consistency only. It does not inspect game source, run builds/scenarios, validate evidence references, judge game quality, or establish AAA readiness.'
+  };
 }
 
 function validateProgressList(value, label) {
@@ -263,6 +384,21 @@ export async function addGameSystem({ workspacePath = process.cwd(), projectPath
   for (const dependency of dependsOn) if (!existing.has(dependency)) throw new Error(`Unknown system dependency: ${dependency}`);
   blueprint.systems.push({ id, name: name.trim(), purpose: purpose?.trim() || `Define how ${name.trim().toLowerCase()} supports the core player experience.`, inputs, outputs, dependsOn, status: 'planned' });
   const destination = await resolveProjectPath(workspacePath, projectPath);
+  const obligationsPath = path.join(destination, 'docs', 'IMPLEMENTATION_OBLIGATIONS.json');
+  let ledger;
+  try {
+    ledger = JSON.parse(await readFile(obligationsPath, 'utf8'));
+    if (ledger?.format !== 'open-game-implementation-obligations' || ledger.version !== 1 || !Array.isArray(ledger.obligations)) throw new Error('Existing implementation obligations ledger has an unsupported format; it was not overwritten.');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    ledger = JSON.parse(makeImplementationObligations({ ...blueprint, systems: blueprint.systems.slice(0, -1) }));
+  }
+  const newSystemLedger = JSON.parse(makeImplementationObligations({ ...blueprint, systems: [blueprint.systems.at(-1)] }));
+  const newSystemObligation = newSystemLedger.obligations.find(entry => entry.kind === 'game-system');
+  if (!ledger.obligations.some(entry => entry?.id === newSystemObligation.id)) ledger.obligations.push(newSystemObligation);
+  // Validate and prepare the ledger before touching the blueprint or design docs.
+  // A malformed existing ledger must not leave the project half-updated.
+  await writeFile(obligationsPath, `${JSON.stringify(ledger, null, 2)}\n`);
   await writeFile(path.join(destination, 'open-game.json'), `${JSON.stringify(blueprint, null, 2)}\n`);
   await writeFile(path.join(destination, 'docs', 'GAME_DESIGN.md'), makeDesignDoc(blueprint));
   await writeFile(path.join(destination, 'docs', 'MILESTONES.md'), makeMilestoneDoc(blueprint));

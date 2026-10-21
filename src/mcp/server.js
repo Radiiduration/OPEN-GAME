@@ -3,8 +3,9 @@ import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import * as z from 'zod/v4';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { addGameSystem, assessOriginality, createGameProject, planVerticalSlice, readGameProgress, readGameProject, updateGameProgress } from '../core/project.js';
+import { addGameSystem, assessOriginality, createGameProject, planVerticalSlice, readGameObligations, readGameProgress, readGameProject, reviewGameObligations, updateGameProgress } from '../core/project.js';
 import { buildGame, packageGameDownload } from '../game/build.js';
+import { buildGameWithEngine, inspectGameEngineProject, launchGameArtifact, runGameEngineScenario } from '../core/engine-adapters.js';
 import { inspectGameToolchains } from '../core/toolchains.js';
 
 const workspacePath = process.env.OPEN_GAME_WORKSPACE || process.cwd();
@@ -26,9 +27,61 @@ function createServer() {
     inputSchema: {}
   }, async () => result(inspectGameToolchains()));
 
+  server.registerTool('inspect_game_engine_project', {
+    title: 'Inspect an engine project',
+    description: 'Find Godot, Unity, and Unreal project markers under a game project and report which engine operations Open Game currently supports. Detection does not prove that the project builds.',
+    inputSchema: { project_path: z.string().min(1) }
+  }, async input => {
+    try { return result(await inspectGameEngineProject({ workspacePath, projectPath: input.project_path })); }
+    catch (error) { return failure(error); }
+  });
+
+  server.registerTool('build_game_engine_project', {
+    title: 'Build a native game project',
+    description: 'Run a bounded engine CLI build for a detected Godot project using a named export preset, a Unity project using its own static build method, or an Unreal project through RunUAT BuildCookRun when UNREAL_ENGINE_ROOT is configured on macOS/Linux. A successful build alone does not verify gameplay or AAA quality.',
+    inputSchema: {
+      project_path: z.string().min(1),
+      output_path: z.string().min(1),
+      engine: z.enum(['auto', 'godot', 'unity', 'unreal']).default('auto'),
+      preset: z.string().max(200).optional().describe('Exact Godot export preset name from export_presets.cfg.'),
+      build_method: z.string().max(300).optional().describe('Unity static C# method that reads OPEN_GAME_BUILD_OUTPUT and OPEN_GAME_BUILD_TARGET.'),
+      target: z.string().max(100).default('desktop'),
+      mode: z.enum(['release', 'debug']).default('release')
+    }
+  }, async input => {
+    try { return result(await buildGameWithEngine({ workspacePath, projectPath: input.project_path, outputPath: input.output_path, engine: input.engine, preset: input.preset, buildMethod: input.build_method, target: input.target, mode: input.mode })); }
+    catch (error) { return failure(error); }
+  });
+
+  server.registerTool('launch_game_artifact', {
+    title: 'Launch a built game artifact',
+    description: 'Start a built executable from within the configured workspace, or ask macOS to open a .app bundle. This only confirms a process launch request; the coding agent must observe the game and exercise gameplay scenarios separately.',
+    inputSchema: {
+      artifact_path: z.string().min(1),
+      executable_path: z.string().min(1).optional().describe('Relative executable path inside artifact_path when a build folder contains multiple launch candidates.')
+    }
+  }, async input => {
+    try { return result(await launchGameArtifact({ workspacePath, artifactPath: input.artifact_path, executablePath: input.executable_path })); }
+    catch (error) { return failure(error); }
+  });
+
+  server.registerTool('run_game_engine_scenario', {
+    title: 'Run a named gameplay scenario',
+    description: 'Run a project-owned Godot scenario runner or Unity static scenario method and return its exit result and logs. The coding agent must author assertions for the named gameplay behavior; an exit code only verifies what that runner checks. Unreal automation remains an agent-driven step.',
+    inputSchema: {
+      project_path: z.string().min(1),
+      scenario_id: z.string().regex(/^[a-z0-9][a-z0-9._-]{0,99}$/i),
+      engine: z.enum(['auto', 'godot', 'unity', 'unreal']).default('auto'),
+      unity_method: z.string().max(300).optional().describe('Unity project-owned static scenario method, such as GameScenarios.RunOpenGameScenario.')
+    }
+  }, async input => {
+    try { return result(await runGameEngineScenario({ workspacePath, projectPath: input.project_path, scenarioId: input.scenario_id, engine: input.engine, unityMethod: input.unity_method })); }
+    catch (error) { return failure(error); }
+  });
+
   server.registerTool('create_game_project', {
     title: 'Create game project blueprint',
-    description: 'Create a project handoff from the creator’s original brief, characters, world, platform, and systems. The connected coding agent must implement the requested game in its chosen engine; this tool does not generate a playable game by itself.',
+    description: 'Create a project handoff from the creator’s original brief, characters, world, platform, and systems, including a reference-study ledger and typed implementation obligations. The connected coding agent must implement the requested game in its chosen engine; this tool does not generate a playable game by itself.',
     inputSchema: {
       project_path: z.string().min(1).describe('New project folder path relative to the configured Open Game workspace.'),
       creator_brief: z.string().max(20000).optional().describe('The complete original prompt, including requested experience, characters, world, systems, target platform, and multiplayer needs. Preserve this verbatim for the coding agent.'),
@@ -68,7 +121,7 @@ function createServer() {
 
   server.registerTool('add_game_system', {
     title: 'Add a connected game system',
-    description: 'Add a planned system to an existing Open Game project. Dependencies must reference existing system IDs. Updates the versioned blueprint and design documents.',
+    description: 'Add a planned system to an existing Open Game project. Dependencies must reference existing system IDs. Updates the versioned blueprint, design documents, and implementation-obligation ledger while preserving existing ledger entries.',
     inputSchema: {
       project_path: z.string().min(1),
       name: z.string().min(1).max(100),
@@ -111,6 +164,24 @@ function createServer() {
     inputSchema: { project_path: z.string().min(1) }
   }, async input => {
     try { return result(await readGameProgress({ workspacePath, projectPath: input.project_path })); }
+    catch (error) { return failure(error); }
+  });
+
+  server.registerTool('read_game_obligations', {
+    title: 'Read game implementation obligations',
+    description: 'Read the generated project’s evidence-linked implementation obligations and quality gates before continuing work.',
+    inputSchema: { project_path: z.string().min(1) }
+  }, async input => {
+    try { return result(await readGameObligations({ workspacePath, projectPath: input.project_path })); }
+    catch (error) { return failure(error); }
+  });
+
+  server.registerTool('review_game_obligations', {
+    title: 'Review obligation ledger completeness',
+    description: 'Check obligation IDs, system ownership, dependencies, applicability decisions, and evidence fields. This checks ledger consistency only; it does not run the game or independently verify AAA quality.',
+    inputSchema: { project_path: z.string().min(1) }
+  }, async input => {
+    try { return result(await reviewGameObligations({ workspacePath, projectPath: input.project_path })); }
     catch (error) { return failure(error); }
   });
 

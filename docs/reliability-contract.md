@@ -24,10 +24,10 @@ If any gate is unavailable, report the exact missing dependency and label the ou
 
 ## Current state
 
-- The repository has one bounded browser racing example adapter and a generic ZIP packager.
+- The repository has one bounded browser racing example adapter, a generic ZIP packager, and initial non-verified native build operations for configured Godot, Unity, and Unreal projects.
 - The Open Game Creator skill guides the user's coding agent through arbitrary briefs, but the LLM and its coding tools perform the actual game implementation.
 - `open-game doctor` and MCP `inspect_game_toolchains` report engine/build executables found on `PATH`. Detection does not prove that export templates, platform SDKs, licenses, assets, or deployment services are ready.
-- No universal arbitrary-game engine generator or verified native AAA lane is currently provided.
+- No universal arbitrary-game engine generator or verified native AAA lane is currently provided. The native operations do not yet launch builds, run gameplay scenarios, profile targets, or validate a release on clean CI.
 
 ## AAA ambition
 
@@ -35,4 +35,4 @@ If any gate is unavailable, report the exact missing dependency and label the ou
 
 ## Next engineering requirement
 
-Before calling any native lane reliable, choose a supported engine/version/platform combination, provide its toolchain in development and CI, add a reusable adapter, and make the build/import/launch gates pass repeatedly on clean checkouts. Add further lanes only with equivalent evidence.
+Before calling any native lane reliable, choose a supported engine/version/platform combination, provide its toolchain in development and CI, then make the import/build/launch/scenario gates pass repeatedly on clean checkouts. The current engine commands are first adapter operations, not verified support lanes. Add release and multiplayer gates before describing a lane as production-ready.
