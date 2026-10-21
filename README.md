@@ -1,6 +1,6 @@
 # Open Game
 
-**Website:** [opengame-ecru.vercel.app](https://opengame-ecru.vercel.app/) · [Install + setup](docs/install.md) · [Releases](https://github.com/Radiiduration/OPEN-GAME/releases) · [Privacy](docs/privacy.html)
+**Website:** [opengame-ecru.vercel.app](https://opengame-ecru.vercel.app/) · [Install + setup](docs/install.md) · [v0.2.0 release notes](docs/releases.md) · [Privacy](docs/privacy.html)
 
 **Dream big. Build original games with depth.**
 
