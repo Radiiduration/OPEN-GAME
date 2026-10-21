@@ -1,8 +1,10 @@
 import path from 'node:path';
-import { copyFile, lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
+import { copyFile, lstat, mkdir, open, realpath, writeFile } from 'node:fs/promises';
+import { constants as fsConstants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const FORMAT = 'open-game-blueprint';
+const MAX_PROJECT_JSON_BYTES = 2 * 1024 * 1024;
 const openGameRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const REFERENCE_TERMS = [
   ['F1', /\bf1\b/i],
@@ -50,6 +52,7 @@ export function validateBlueprint(input) {
   if (game.raceLaps !== undefined && (!Number.isInteger(Number(game.raceLaps)) || Number(game.raceLaps) < 1 || Number(game.raceLaps) > 12)) throw new Error('Race laps must be a whole number from 1 to 12.');
   if (game.accentColor !== undefined && !/^#[0-9a-f]{6}$/i.test(game.accentColor)) throw new Error('Accent color must be a six-digit hex color.');
   if (!Array.isArray(input.systems)) throw new Error('Blueprint systems must be an array.');
+  if (input.systems.length > 300) throw new Error('Blueprint systems must contain at most 300 entries.');
   const seen = new Set();
   for (const [index, system] of input.systems.entries()) {
     assertString(system?.name, `System ${index + 1} name`, 100);
@@ -145,6 +148,65 @@ async function resolveProjectPath(workspacePath, projectPath) {
     }
   }
   return absolute;
+}
+
+async function projectFilePath(workspacePath, projectPath, relativeFile) {
+  const project = await resolveProjectPath(workspacePath, projectPath);
+  const root = await realpath(project);
+  if (!root.startsWith(`${await realpath(workspacePath)}${path.sep}`)) throw new Error('Project must remain inside the configured workspace.');
+  const target = path.resolve(root, relativeFile);
+  const relative = path.relative(root, target);
+  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) throw new Error('Project file path is outside the project.');
+  let parent = root;
+  for (const part of path.dirname(relative).split(path.sep).filter(Boolean)) {
+    parent = path.join(parent, part);
+    const stat = await lstat(parent);
+    if (stat.isSymbolicLink() || !stat.isDirectory()) throw new Error('Project files cannot pass through symbolic links or non-directory components.');
+  }
+  return { root, target };
+}
+
+export async function readProjectFile(workspacePath, projectPath, relativeFile, maxBytes = MAX_PROJECT_JSON_BYTES) {
+  const { root, target } = await projectFilePath(workspacePath, projectPath, relativeFile);
+  const before = await lstat(target);
+  if (before.isSymbolicLink() || !before.isFile() || before.nlink > 1) throw new Error(`Project file ${relativeFile} must be a regular, non-symbolic-link file without hard links.`);
+  const handle = await open(target, fsConstants.O_RDONLY | (fsConstants.O_NOFOLLOW || 0));
+  try {
+    const stat = await handle.stat();
+    if (!stat.isFile() || stat.nlink > 1 || stat.size > maxBytes) throw new Error(`Project file ${relativeFile} must be a regular file without hard links and no larger than ${maxBytes} bytes.`);
+    if (stat.dev !== before.dev || stat.ino !== before.ino) throw new Error(`Project file ${relativeFile} changed during access.`);
+    const text = await handle.readFile('utf8');
+    if (await realpath(path.dirname(target)) !== path.dirname(target) || await realpath(target) !== target || !(target.startsWith(`${root}${path.sep}`))) throw new Error('Project file path changed during access.');
+    return text;
+  } finally { await handle.close(); }
+}
+
+async function writeProjectFile(workspacePath, projectPath, relativeFile, contents, { exclusive = false } = {}) {
+  const { root, target } = await projectFilePath(workspacePath, projectPath, relativeFile);
+  const parent = path.dirname(target);
+  const temp = path.join(parent, `.open-game-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.tmp`);
+  const flags = fsConstants.O_WRONLY | fsConstants.O_CREAT | fsConstants.O_EXCL | (fsConstants.O_NOFOLLOW || 0);
+  let handle;
+  try {
+    handle = await open(temp, flags, 0o600);
+    await handle.writeFile(contents);
+    await handle.sync();
+    await handle.close(); handle = null;
+    if (await realpath(parent) !== parent) throw new Error('Project directory changed during write.');
+    if (exclusive) {
+      // link() fails if the destination already exists and does not follow a destination symlink.
+      const { link, unlink } = await import('node:fs/promises');
+      await link(temp, target);
+      await unlink(temp);
+    } else {
+      const { rename } = await import('node:fs/promises');
+      await rename(temp, target);
+    }
+  } finally {
+    if (handle) await handle.close().catch(() => {});
+    const { unlink } = await import('node:fs/promises');
+    await unlink(temp).catch(() => {});
+  }
 }
 
 function makeDesignDoc(blueprint) {
@@ -268,14 +330,12 @@ export async function createGameProject({ workspacePath = process.cwd(), project
 
 export async function readGameProject({ workspacePath = process.cwd(), projectPath }) {
   if (!projectPath) throw new Error('projectPath is required.');
-  const destination = await resolveProjectPath(workspacePath, projectPath);
-  const text = await readFile(path.join(destination, 'open-game.json'), 'utf8');
+  const text = await readProjectFile(workspacePath, projectPath, 'open-game.json');
   return normalizeBlueprint(JSON.parse(text));
 }
 
 export async function readGameObligations({ workspacePath = process.cwd(), projectPath }) {
-  const destination = await resolveProjectPath(workspacePath, projectPath);
-  return JSON.parse(await readFile(path.join(destination, 'docs', 'IMPLEMENTATION_OBLIGATIONS.json'), 'utf8'));
+  return JSON.parse(await readProjectFile(workspacePath, projectPath, 'docs/IMPLEMENTATION_OBLIGATIONS.json'));
 }
 
 export async function reviewGameObligations({ workspacePath = process.cwd(), projectPath }) {
@@ -334,9 +394,7 @@ function validateProgressList(value, label) {
 }
 
 export async function readGameProgress({ workspacePath = process.cwd(), projectPath }) {
-  const destination = await resolveProjectPath(workspacePath, projectPath);
-  const progressPath = path.join(destination, 'open-game-progress.json');
-  try { return JSON.parse(await readFile(progressPath, 'utf8')); }
+  try { return JSON.parse(await readProjectFile(workspacePath, projectPath, 'open-game-progress.json')); }
   catch (error) {
     if (error.code === 'ENOENT') throw new Error('This project has no Open Game progress record yet. Create it from a blueprint first.');
     throw error;
@@ -344,7 +402,6 @@ export async function readGameProgress({ workspacePath = process.cwd(), projectP
 }
 
 export async function updateGameProgress({ workspacePath = process.cwd(), projectPath, engine, target, phase, completedSystems, verification, artifacts, blockers, nextTask }) {
-  const destination = await resolveProjectPath(workspacePath, projectPath);
   const previous = await readGameProgress({ workspacePath, projectPath });
   const next = {
     ...previous,
@@ -358,7 +415,7 @@ export async function updateGameProgress({ workspacePath = process.cwd(), projec
     ...(nextTask !== undefined ? { nextTask: assertString(nextTask, 'Next task', 2000) } : {}),
     updatedAt: new Date().toISOString()
   };
-  await writeFile(path.join(destination, 'open-game-progress.json'), `${JSON.stringify(next, null, 2)}\n`);
+  await writeProjectFile(workspacePath, projectPath, 'open-game-progress.json', `${JSON.stringify(next, null, 2)}\n`);
   const section = (title, rows) => `## ${title}\n\n${rows.length ? rows.map(value => `- ${value}`).join('\n') : '- None recorded.'}\n`;
   const markdown = [
     '# Open Game progress', '',
@@ -372,7 +429,7 @@ export async function updateGameProgress({ workspacePath = process.cwd(), projec
     section('Blockers', next.blockers),
     '## Next concrete task', '', next.nextTask, ''
   ].join('\n');
-  await writeFile(path.join(destination, 'OPEN_GAME_STATUS.md'), markdown);
+  await writeProjectFile(workspacePath, projectPath, 'OPEN_GAME_STATUS.md', markdown);
   return next;
 }
 
@@ -383,11 +440,9 @@ export async function addGameSystem({ workspacePath = process.cwd(), projectPath
   const existing = new Set(blueprint.systems.map(system => system.id));
   for (const dependency of dependsOn) if (!existing.has(dependency)) throw new Error(`Unknown system dependency: ${dependency}`);
   blueprint.systems.push({ id, name: name.trim(), purpose: purpose?.trim() || `Define how ${name.trim().toLowerCase()} supports the core player experience.`, inputs, outputs, dependsOn, status: 'planned' });
-  const destination = await resolveProjectPath(workspacePath, projectPath);
-  const obligationsPath = path.join(destination, 'docs', 'IMPLEMENTATION_OBLIGATIONS.json');
   let ledger;
   try {
-    ledger = JSON.parse(await readFile(obligationsPath, 'utf8'));
+    ledger = JSON.parse(await readProjectFile(workspacePath, projectPath, 'docs/IMPLEMENTATION_OBLIGATIONS.json'));
     if (ledger?.format !== 'open-game-implementation-obligations' || ledger.version !== 1 || !Array.isArray(ledger.obligations)) throw new Error('Existing implementation obligations ledger has an unsupported format; it was not overwritten.');
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
@@ -398,10 +453,10 @@ export async function addGameSystem({ workspacePath = process.cwd(), projectPath
   if (!ledger.obligations.some(entry => entry?.id === newSystemObligation.id)) ledger.obligations.push(newSystemObligation);
   // Validate and prepare the ledger before touching the blueprint or design docs.
   // A malformed existing ledger must not leave the project half-updated.
-  await writeFile(obligationsPath, `${JSON.stringify(ledger, null, 2)}\n`);
-  await writeFile(path.join(destination, 'open-game.json'), `${JSON.stringify(blueprint, null, 2)}\n`);
-  await writeFile(path.join(destination, 'docs', 'GAME_DESIGN.md'), makeDesignDoc(blueprint));
-  await writeFile(path.join(destination, 'docs', 'MILESTONES.md'), makeMilestoneDoc(blueprint));
+  await writeProjectFile(workspacePath, projectPath, 'docs/IMPLEMENTATION_OBLIGATIONS.json', `${JSON.stringify(ledger, null, 2)}\n`);
+  await writeProjectFile(workspacePath, projectPath, 'open-game.json', `${JSON.stringify(blueprint, null, 2)}\n`);
+  await writeProjectFile(workspacePath, projectPath, 'docs/GAME_DESIGN.md', makeDesignDoc(blueprint));
+  await writeProjectFile(workspacePath, projectPath, 'docs/MILESTONES.md', makeMilestoneDoc(blueprint));
   return blueprint;
 }
 

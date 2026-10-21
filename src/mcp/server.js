@@ -46,10 +46,11 @@ function createServer() {
       preset: z.string().max(200).optional().describe('Exact Godot export preset name from export_presets.cfg.'),
       build_method: z.string().max(300).optional().describe('Unity static C# method that reads OPEN_GAME_BUILD_OUTPUT and OPEN_GAME_BUILD_TARGET.'),
       target: z.string().max(100).default('desktop'),
-      mode: z.enum(['release', 'debug']).default('release')
+      mode: z.enum(['release', 'debug']).default('release'),
+      allow_project_code_execution: z.boolean().default(false).describe('Must be true only after reviewing and trusting this project. Engine builds execute project-authored code with this account’s permissions.')
     }
   }, async input => {
-    try { return result(await buildGameWithEngine({ workspacePath, projectPath: input.project_path, outputPath: input.output_path, engine: input.engine, preset: input.preset, buildMethod: input.build_method, target: input.target, mode: input.mode })); }
+    try { return result(await buildGameWithEngine({ workspacePath, projectPath: input.project_path, outputPath: input.output_path, engine: input.engine, preset: input.preset, buildMethod: input.build_method, target: input.target, mode: input.mode, allowProjectCodeExecution: input.allow_project_code_execution })); }
     catch (error) { return failure(error); }
   });
 
@@ -58,10 +59,11 @@ function createServer() {
     description: 'Start a built executable from within the configured workspace, or ask macOS to open a .app bundle. This only confirms a process launch request; the coding agent must observe the game and exercise gameplay scenarios separately.',
     inputSchema: {
       artifact_path: z.string().min(1),
-      executable_path: z.string().min(1).optional().describe('Relative executable path inside artifact_path when a build folder contains multiple launch candidates.')
+      executable_path: z.string().min(1).optional().describe('Relative executable path inside artifact_path when a build folder contains multiple launch candidates.'),
+      allow_project_code_execution: z.boolean().default(false).describe('Must be true only after reviewing and trusting this executable; it runs with this account’s permissions.')
     }
   }, async input => {
-    try { return result(await launchGameArtifact({ workspacePath, artifactPath: input.artifact_path, executablePath: input.executable_path })); }
+    try { return result(await launchGameArtifact({ workspacePath, artifactPath: input.artifact_path, executablePath: input.executable_path, allowProjectCodeExecution: input.allow_project_code_execution })); }
     catch (error) { return failure(error); }
   });
 
@@ -72,10 +74,11 @@ function createServer() {
       project_path: z.string().min(1),
       scenario_id: z.string().regex(/^[a-z0-9][a-z0-9._-]{0,99}$/i),
       engine: z.enum(['auto', 'godot', 'unity', 'unreal']).default('auto'),
-      unity_method: z.string().max(300).optional().describe('Unity project-owned static scenario method, such as GameScenarios.RunOpenGameScenario.')
+      unity_method: z.string().max(300).optional().describe('Unity project-owned static scenario method, such as GameScenarios.RunOpenGameScenario.'),
+      allow_project_code_execution: z.boolean().default(false).describe('Must be true only after reviewing and trusting this project. Scenario execution runs project-authored code.')
     }
   }, async input => {
-    try { return result(await runGameEngineScenario({ workspacePath, projectPath: input.project_path, scenarioId: input.scenario_id, engine: input.engine, unityMethod: input.unity_method })); }
+    try { return result(await runGameEngineScenario({ workspacePath, projectPath: input.project_path, scenarioId: input.scenario_id, engine: input.engine, unityMethod: input.unity_method, allowProjectCodeExecution: input.allow_project_code_execution })); }
     catch (error) { return failure(error); }
   });
 

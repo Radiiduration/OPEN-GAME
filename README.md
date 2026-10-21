@@ -87,7 +87,11 @@ npm install
 npm start
 ```
 
-Players open the generated `index.html`, choose Online Lobby, and connect to `ws://localhost:8787` (or the host's LAN address). The server uses shared server-simulated movement, a room-wide countdown, and a maximum of eight players. Rooms are ephemeral; it has no persistence, reconnect, matchmaking, authentication, or TLS and is intended for LAN/friends testing, not public production hosting.
+Players open the generated `index.html`, choose Online Lobby, and connect to `ws://localhost:8787`. To intentionally allow LAN connections, start the server with `HOST=0.0.0.0`; the default is loopback-only. It caps handshakes at 12 attempts per IP per 10 seconds, 8 open sockets per IP and 48 overall, and applies sliding-window message limits of 60 per socket and 120 per IP per second. Handshake throttles return HTTP 429 with `Retry-After`. Rooms are ephemeral; there is no user authentication, persistence, reconnect, matchmaking, or TLS. Only expose it to a trusted LAN and never directly to the public internet.
+
+## Security
+
+Engine builds, scenario runs, and executable launches require an explicit acknowledgement because they run project code with your account permissions. Review the project first; use a disposable VM/container without credentials and with restricted network access for untrusted projects. The reduced child-process environment is not a sandbox. Project JSON reads reject symlink and hard-linked files and oversized input; ZIP packaging streams output, rejects links, excludes common credential/key files, and is limited to 10,000 files and 256 MiB uncompressed. See [SECURITY.md](SECURITY.md).
 
 ### MCP server
 

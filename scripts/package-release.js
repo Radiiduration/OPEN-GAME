@@ -6,15 +6,8 @@ import { fileURLToPath } from 'node:url';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outputDirectory = path.join(projectRoot, 'dist');
-const npmCli = process.env.npm_execpath;
-
-if (!npmCli) {
-  console.error('Run this packager through npm: npm run package:release');
-  process.exit(1);
-}
-
 await mkdir(outputDirectory, { recursive: true });
-const result = spawnSync(process.execPath, [npmCli, 'pack', '--pack-destination', outputDirectory], {
+const result = spawnSync('npm', ['pack', '--pack-destination', outputDirectory], {
   cwd: projectRoot,
   stdio: 'inherit'
 });

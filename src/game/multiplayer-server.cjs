@@ -5,22 +5,62 @@ const { WebSocketServer } = require('ws');
 const Sim = require('./race-sim.js');
 
 const PORT = Math.max(1, Math.min(65535, Number(process.env.PORT) || 8787));
-const HOST = process.env.HOST || '0.0.0.0';
+const HOST = process.env.HOST || '127.0.0.1';
 const TICK_RATE = 20;
 const MAX_CLIENTS = 48;
 const MAX_ROOMS = 20;
 const rooms = new Map();
+const connectionAttempts = new Map();
+const activeConnectionsByAddress = new Map();
+const messageTimesByAddress = new Map();
 let nextId = 1;
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [address, timestamps] of connectionAttempts) {
+    const recent = timestamps.filter(timestamp => now - timestamp < 10000);
+    if (recent.length) connectionAttempts.set(address, recent);
+    else connectionAttempts.delete(address);
+  }
+  for (const [address, timestamps] of messageTimesByAddress) {
+    const recent = timestamps.filter(timestamp => now - timestamp < 1000);
+    if (recent.length) messageTimesByAddress.set(address, recent);
+    else messageTimesByAddress.delete(address);
+  }
+}, 60000).unref();
 
 const server = http.createServer((req, res) => {
   if (req.url === '/health') {
-    res.writeHead(200, { 'content-type': 'application/json', 'access-control-allow-origin': '*' });
+    res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
     res.end(JSON.stringify({ status: 'ok', rooms: rooms.size, players: [...rooms.values()].reduce((n, r) => n + r.players.size, 0) }));
     return;
   }
   res.writeHead(404, { 'content-type': 'text/plain' }); res.end('Open Game race server. WebSocket endpoint: /');
 });
-const wss = new WebSocketServer({ server, maxPayload: 4096, perMessageDeflate: false });
+const wss = new WebSocketServer({
+  server,
+  maxPayload: 4096,
+  perMessageDeflate: false,
+  clientTracking: true,
+  verifyClient: (info, done) => {
+    const origin = info.origin;
+    const allowedOrigins = new Set((process.env.ALLOWED_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean));
+    const localOrigin = typeof origin === 'string' && (origin === 'null' || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin));
+    if (origin && !localOrigin && !allowedOrigins.has(origin)) return done(false, 403, '{"error":"forbidden"}', { 'Content-Type': 'application/json' });
+    const address = info.req.socket.remoteAddress || 'unknown';
+    const now = Date.now();
+    const attempts = (connectionAttempts.get(address) || []).filter(timestamp => now - timestamp < 10_000);
+    if (attempts.length >= 12) return done(false, 429, '{"error":"rate_limited"}', { 'Retry-After': '10', 'Content-Type': 'application/json' });
+    if (wss.clients.size >= MAX_CLIENTS || (activeConnectionsByAddress.get(address) || 0) >= 8) {
+      return done(false, 429, '{"error":"rate_limited"}', { 'Retry-After': '10', 'Content-Type': 'application/json' });
+    }
+    attempts.push(now);
+    connectionAttempts.set(address, attempts);
+    activeConnectionsByAddress.set(address, (activeConnectionsByAddress.get(address) || 0) + 1);
+    info.req.openGameRateLimitAddress = address;
+    done(true);
+  }
+});
 
 function safeText(value, fallback, max = 32) {
   if (typeof value !== 'string') return fallback;
@@ -46,16 +86,32 @@ function join(ws, data) {
   const requestedLaps = Math.max(1, Math.min(12, Number(data.laps) || room.lapsToWin));
   if (requestedLaps !== room.lapsToWin) return send(ws, { type: 'error', message: 'This room is running a different race length.' });
   const id = String(nextId++);
-  const player = { id, ws, name: safeText(data.name, `Driver ${id}`, 24), team: safeText(data.team, 'Visitor', 30), color: /^#[0-9a-f]{6}$/i.test(data.color || '') ? data.color : '#df4b36', car: Sim.createCar(id, data.name, data.color), input: { throttle: 0, brake: 0, steer: 0, boost: false }, lapsToWin: requestedLaps, lastInput: Date.now() };
+  const name = safeText(data.name, `Driver ${id}`, 24);
+  const color = /^#[0-9a-f]{6}$/i.test(data.color || '') ? data.color : '#df4b36';
+  const player = { id, ws, name, team: safeText(data.team, 'Visitor', 30), color, car: Sim.createCar(id, name, color), input: { throttle: 0, brake: 0, steer: 0, boost: false }, lapsToWin: requestedLaps, lastInput: Date.now() };
   player.car.progress = room.players.size * .008;
   room.players.set(id, player); ws.player = player; ws.room = room;
   send(ws, { type: 'welcome', id, room: roomId, players: room.players.size });
   broadcast(room, { type: 'state', players: roomState(room) });
 }
-wss.on('connection', ws => {
-  if (wss.clients.size > MAX_CLIENTS) { ws.close(1013, 'Server capacity reached'); return; }
+wss.on('connection', (ws, request) => {
+  const remote = request.openGameRateLimitAddress || request.socket.remoteAddress || 'unknown';
+  ws.once('close', () => {
+    const remaining = Math.max(0, (activeConnectionsByAddress.get(remote) || 1) - 1);
+    if (remaining) activeConnectionsByAddress.set(remote, remaining);
+    else activeConnectionsByAddress.delete(remote);
+  });
+  ws.messageTimes = [];
   ws.on('message', raw => {
     if (raw.length > 4096) return ws.close(1009, 'Message too large');
+    const now = Date.now();
+    ws.messageTimes = ws.messageTimes.filter(timestamp => now - timestamp < 1000);
+    if (ws.messageTimes.length >= 60) return ws.close(1008, 'Per-connection message rate limit reached');
+    ws.messageTimes.push(now);
+    const addressMessages = (messageTimesByAddress.get(remote) || []).filter(timestamp => now - timestamp < 1000);
+    if (addressMessages.length >= 120) return ws.close(1008, 'Per-address message rate limit reached');
+    addressMessages.push(now);
+    messageTimesByAddress.set(remote, addressMessages);
     let message;
     try { message = JSON.parse(raw.toString()); } catch { return send(ws, { type: 'error', message: 'Message must be valid JSON.' }); }
     if (message.type === 'join' && !ws.player) return join(ws, message);
@@ -99,11 +155,11 @@ setInterval(() => {
     }
     const now = Date.now();
     if ([...room.players.values()].every(p => p.car.finished)) room.raceActive = false;
-    if ([...room.players.values()].every(p => p.car.finished)) room.raceActive = false;
     if (now - room.lastSnapshot >= 50) { room.lastSnapshot = now; broadcast(room, { type: 'state', players: roomState(room), serverTime: now }); }
   }
 }, 1000 / TICK_RATE).unref();
 
 server.listen(PORT, HOST, () => console.log(`Open Game multiplayer server listening on ws://${HOST}:${PORT}`));
+server.on('error', error => { console.error(`Multiplayer server failed: ${error.message}`); process.exitCode = 1; });
 process.on('SIGINT', () => { for (const ws of wss.clients) ws.close(); server.close(() => process.exit(0)); });
 process.on('SIGTERM', () => { for (const ws of wss.clients) ws.close(); server.close(() => process.exit(0)); });

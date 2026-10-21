@@ -92,7 +92,7 @@ The connected LLM authors the game code. The repo does not contain a model, arbi
 
 ## Safety and project boundaries
 
-- MCP writes are anchored to `OPEN_GAME_WORKSPACE` (or the server's current directory when unset) and reject traversal and symbolic-link escapes.
+- MCP project paths are anchored to `OPEN_GAME_WORKSPACE` (or the server's current directory when unset). Structured project reads reject symlink targets, project data has input-size limits, and progress writes are atomic. These measures reduce path escapes but do not eliminate every local filesystem race; see [the security policy](../SECURITY.md).
 - Project creation writes into a new directory and must not overwrite creator-owned work.
 - Blueprint and system updates preserve stable IDs and validate system dependencies.
 - Third-party assets need source and license records.

@@ -71,7 +71,13 @@ export async function inspectGameEngineProject({ workspacePath = process.cwd(), 
   };
 }
 
-function run(command, args, { cwd, env = process.env, timeoutMs = 900000 }) {
+function sanitizedEngineEnvironment(overrides = {}) {
+  const allowed = ['PATH', 'HOME', 'USERPROFILE', 'SystemRoot', 'WINDIR', 'TMPDIR', 'TMP', 'TEMP', 'LANG', 'LC_ALL'];
+  const env = Object.fromEntries(allowed.filter(key => process.env[key] !== undefined).map(key => [key, process.env[key]]));
+  return { ...env, ...overrides };
+}
+
+function run(command, args, { cwd, env = sanitizedEngineEnvironment(), timeoutMs = 900000 }) {
   const result = spawnSync(command, args, {
     cwd,
     env,
@@ -111,7 +117,12 @@ function installedEngineCommand(engine, override, fallback) {
   return detected.command || fallback;
 }
 
-export async function buildGameWithEngine({ workspacePath = process.cwd(), projectPath, outputPath, engine = 'auto', preset, buildMethod, target = 'desktop', mode = 'release' }) {
+function assertExecutionApproved(allowProjectCodeExecution) {
+  if (allowProjectCodeExecution !== true) throw new Error('This operation executes code from the selected game project with your account permissions. Review the project first, then explicitly set allowProjectCodeExecution=true. For untrusted projects, use a disposable isolated environment without secrets or unrestricted network access.');
+}
+
+export async function buildGameWithEngine({ workspacePath = process.cwd(), projectPath, outputPath, engine = 'auto', preset, buildMethod, target = 'desktop', mode = 'release', allowProjectCodeExecution = false }) {
+  assertExecutionApproved(allowProjectCodeExecution);
   if (!projectPath || !outputPath) throw new Error('projectPath and outputPath are required.');
   const root = await resolveWorkspaceDestination(workspacePath, projectPath);
   const output = await resolveWorkspaceDestination(workspacePath, outputPath);
@@ -196,7 +207,7 @@ async function findLaunchCandidates(root) {
 
 function startDetached(command, args, cwd) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { cwd, detached: true, stdio: 'ignore', windowsHide: true });
+    const child = spawn(command, args, { cwd, env: sanitizedEngineEnvironment(), detached: true, stdio: 'ignore', windowsHide: true });
     child.once('error', reject);
     child.once('spawn', () => {
       child.unref();
@@ -205,7 +216,8 @@ function startDetached(command, args, cwd) {
   });
 }
 
-export async function launchGameArtifact({ workspacePath = process.cwd(), artifactPath, executablePath }) {
+export async function launchGameArtifact({ workspacePath = process.cwd(), artifactPath, executablePath, allowProjectCodeExecution = false }) {
+  assertExecutionApproved(allowProjectCodeExecution);
   if (!artifactPath) throw new Error('artifactPath is required.');
   const artifact = await resolveWorkspaceDestination(workspacePath, artifactPath);
   const artifactStat = await lstat(artifact);
@@ -232,7 +244,8 @@ export async function launchGameArtifact({ workspacePath = process.cwd(), artifa
   return { status: 'process-started', artifact: target, pid: started.pid, limitation: 'Process creation succeeded. The game still needs runtime observation and gameplay scenario checks.' };
 }
 
-export async function runGameEngineScenario({ workspacePath = process.cwd(), projectPath, scenarioId, engine = 'auto', unityMethod }) {
+export async function runGameEngineScenario({ workspacePath = process.cwd(), projectPath, scenarioId, engine = 'auto', unityMethod, allowProjectCodeExecution = false }) {
+  assertExecutionApproved(allowProjectCodeExecution);
   if (!projectPath || !scenarioId) throw new Error('projectPath and scenarioId are required.');
   if (!/^[a-z0-9][a-z0-9._-]{0,99}$/i.test(scenarioId)) throw new Error('scenarioId must be a short stable ID using letters, numbers, dots, underscores, or hyphens.');
   const root = await resolveWorkspaceDestination(workspacePath, projectPath);
@@ -243,7 +256,7 @@ export async function runGameEngineScenario({ workspacePath = process.cwd(), pro
   if (!selected) throw new Error('Specify one unambiguous engine project before running a scenario.');
   let binary;
   let args;
-  let env = process.env;
+  let env = sanitizedEngineEnvironment();
   if (selected.engine === 'Godot') {
     const runner = path.join(root, 'tests', 'open_game_scenario_runner.gd');
     try { if (!(await lstat(runner)).isFile()) throw new Error('not a regular file'); }
@@ -256,7 +269,7 @@ export async function runGameEngineScenario({ workspacePath = process.cwd(), pro
     binary = installedEngineCommand('Unity', process.env.UNITY_BIN, process.platform === 'win32' ? 'Unity.exe' : 'Unity');
     const projectRoot = path.resolve(root, selected.projectFile);
     args = ['-batchmode', '-nographics', '-quit', '-projectPath', projectRoot, '-executeMethod', unityMethod, '-logFile', '-'];
-    env = { ...process.env, OPEN_GAME_SCENARIO_ID: scenarioId };
+    env = sanitizedEngineEnvironment({ OPEN_GAME_SCENARIO_ID: scenarioId });
   } else {
     throw new Error('Unreal scenario execution is not implemented by the adapter. Use the project’s Unreal Automation Framework from the coding agent and attach the resulting log to the obligation evidence.');
   }

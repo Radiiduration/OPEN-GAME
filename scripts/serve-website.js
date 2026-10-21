@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import { createServer } from 'node:http';
 import path from 'node:path';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, realpath, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const siteRoot = path.join(projectRoot, 'docs');
+const realSiteRoot = await realpath(siteRoot);
 const portArg = process.argv.find((value, index, values) => values[index - 1] === '--port');
 const port = Number(portArg || process.env.PORT || 4174);
 const mimeTypes = new Map([
@@ -34,7 +35,12 @@ const server = createServer(async (request, response) => {
   }
   try {
     if ((await stat(target)).isDirectory()) target = path.join(target, 'index.html');
-    const body = await readFile(target);
+    const realTarget = await realpath(target);
+    if (realTarget !== realSiteRoot && !realTarget.startsWith(`${realSiteRoot}${path.sep}`)) {
+      response.writeHead(403).end('Forbidden');
+      return;
+    }
+    const body = await readFile(realTarget);
     response.writeHead(200, {
       'content-type': mimeTypes.get(path.extname(target)) || 'application/octet-stream',
       'cache-control': 'no-store',

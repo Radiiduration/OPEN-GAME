@@ -33,4 +33,4 @@ For this repository the expected project-site shape is `https://radiiduration.gi
 
 `npm run package:release` writes a versioned npm tarball under `dist/`. To publish a GitHub release, create a version tag that matches `package.json`, run the pack command, and attach the `.tgz` to the release. The website links to the repository's Releases page and makes clear that the registry package is not published until the maintainer completes that separate release step.
 
-Before publishing to the npm registry, choose and add the project's license, confirm the package name and maintainer account, then publish from the reviewed release tag. The repository currently has no `LICENSE` file; the GitHub-source install and local tarball workflow do not publish to the public npm registry.
+Before publishing to the npm registry, confirm the package name, maintainer account, license metadata, and reviewed release tag. The repository includes an MIT `LICENSE`; a local tarball build does not publish to the public npm registry.

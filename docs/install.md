@@ -70,6 +70,8 @@ Create the workspace directory first, replace the example path with its absolute
 
 The MCP server confines project creation and packaging to `OPEN_GAME_WORKSPACE`. It does not provision engines, cloud services, model accounts, multiplayer hosting, or export licenses.
 
+**Security:** Engine build, scenario, and launch actions execute project code. Review a project before allowing execution; the tools require an explicit `--allow-project-code-execution` CLI flag or `allow_project_code_execution: true` MCP field. That flag is an acknowledgement, not a sandbox. For untrusted projects, use an isolated VM/container with no secrets and restricted network access. See [SECURITY.md](../SECURITY.md).
+
 ## Preview this website locally
 
 From the repository root:
