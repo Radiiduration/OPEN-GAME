@@ -29,6 +29,12 @@ Open Game is a **game creation platform**, not only a library of small templates
 
 The repo combines an agent-facing **Open Game Creator** skill, a visual **Game Blueprint Studio**, a CLI, an MCP server, and a shared project core. The Studio captures an ambitious vision and exports a structured blueprint. The CLI and MCP expose matching project operations. The skill guides an agent to implement actual game files in the user's chosen engine through progressive milestones. Generated projects now include a reference evidence ledger and typed implementation obligations; the CLI/MCP can review ledger completeness, but the coding LLM and engine still perform and verify the actual game work.
 
+### How the Open Game repo works
+
+![Open Game architecture: a creator brief flows through the Studio, shared project tools, and a connected coding LLM into an editable engine project, then through build and play feedback](docs/open-game-working-model.svg)
+
+The Studio turns a creator's original idea into a structured blueprint or LLM build brief. The Open Game Creator skill guides a connected coding LLM; the shared core, CLI, and MCP server provide project operations and progress records. The LLM writes the actual game in an appropriate engine, then uses the available build, run, and packaging tools to iterate toward a playable download. Engine support depends on the installed toolchain; the repo is not itself an autonomous game model or universal one-click compiler.
+
 ### Current working build
 
 Install dependencies with `npm install`, then run `npm run studio` and open the local URL printed in the terminal. Describe the game, add your characters and world details, choose a target platform and multiplayer scope, select systems, and export either the JSON blueprint or an **LLM build brief**. Open this repository in a coding agent and give it the build brief; the brief tells the agent to inspect the project, implement actual engine files, build and run them, fix failures, and continue through the requested systems. The connected coding agent performs that work.
