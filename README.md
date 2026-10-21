@@ -1,6 +1,6 @@
 # Open Game
 
-**Website:** [opengame-ecru.vercel.app](https://opengame-ecru.vercel.app/) · [Install + setup](docs/install.md) · [v0.2.0 release notes](docs/releases.md) · [Privacy](docs/privacy.html)
+**Website:** [opengame-ecru.vercel.app](https://opengame-ecru.vercel.app/) · [Install + setup](docs/install.md) · [v0.2.0 release notes](docs/releases.md) · [Privacy](docs/privacy.html) · [MIT License](LICENSE) · [Disclaimer](DISCLAIMER.md) · [Third-party notices](THIRD_PARTY_NOTICES.md)
 
 **Dream big. Build original games with depth.**
 
@@ -260,6 +260,10 @@ Choose licenses deliberately: code, documentation, and creative assets may need 
 ## Contributing
 
 Contributions should help creators make original games and understand the materials they use. Before opening a pull request, include the source and license for new assets and dependencies, describe any changes to the project guardrails, and avoid examples that reproduce recognizable protected content.
+
+## License and legal use
+
+The Open Game toolkit source and project documentation are licensed under the [MIT License](LICENSE), subject to the scope notes in the [disclaimer](DISCLAIMER.md). Third-party packages and tools retain their own terms; see [third-party notices](THIRD_PARTY_NOTICES.md). This repository license does not automatically license creator-supplied or generated games, game assets, model output, or engine software. Creators remain responsible for permissions, provenance, attribution, and review. Neither the license nor Open Game's originality guidance guarantees that a project is free from legal claims.
 
 ## Name
 
