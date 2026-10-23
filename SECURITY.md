@@ -8,9 +8,9 @@ Do not publish exploit details in a public issue. Use GitHub's private vulnerabi
 
 - Open Game's MCP server is a local stdio process. Any coding agent configured to use it can invoke its workspace operations.
 - Engine build, scenario, and launch operations execute project-authored code. They require an explicit `allow_project_code_execution` MCP value or `--allow-project-code-execution` CLI flag. Review projects first. For untrusted projects, use a disposable VM/container with no secrets and restricted network access.
-- The reduced environment passed to child processes removes unrelated environment variables, but it is **not a sandbox**. Engine code still runs with the operating-system permissions of the current account.
+- Engine child processes receive a reduced environment containing only basic runtime paths/locale plus operation-specific output variables. This reduces accidental exposure of process credentials, but it is **not a sandbox**: engine code still runs with the operating-system permissions of the current account and can access files/network available to that account.
 - The generated multiplayer server binds to `127.0.0.1` by default. Setting `HOST=0.0.0.0` exposes it to the LAN; the demo has no user authentication, persistence, or TLS and must not be exposed directly to the internet. Its WebSocket handshake returns HTTP 429 with `Retry-After` when connection limits are reached; established sockets are closed with code 1008 when message limits are exceeded.
-- Project and archive size limits reduce resource exhaustion but do not make arbitrary projects safe to open or execute.
+- Project and archive size limits reduce resource exhaustion but do not make arbitrary projects safe to open or execute. Packaging skips common credential directories and filename patterns; inspect every archive before sharing because no filename filter can detect all secrets or private data.
 
 ## Repository and commit privacy
 

@@ -87,7 +87,7 @@ npm install
 npm start
 ```
 
-Players open the generated `index.html`, choose Online Lobby, and connect to `ws://localhost:8787`. To intentionally allow LAN connections, start the server with `HOST=0.0.0.0`; the default is loopback-only. It caps handshakes at 12 attempts per IP per 10 seconds, 8 open sockets per IP and 48 overall, and applies sliding-window message limits of 60 per socket and 120 per IP per second. Handshake throttles return HTTP 429 with `Retry-After`. Rooms are ephemeral; there is no user authentication, persistence, reconnect, matchmaking, or TLS. Only expose it to a trusted LAN and never directly to the public internet.
+Players open the generated `index.html`, choose Online Lobby, and connect to `ws://localhost:8787`. To intentionally allow LAN connections, start the server with `HOST=0.0.0.0`; the default is loopback-only. Browser opaque origins (`Origin: null`, used by `file://`) are rejected unless `ALLOW_NULL_ORIGIN=1` is explicitly set; serving the game from localhost is preferred. It caps handshakes at 12 attempts per IP per 10 seconds, 8 open sockets per IP and 48 overall, and applies sliding-window message limits of 60 per socket and 120 per IP per second. Handshake throttles return HTTP 429 with `Retry-After`. Rooms are ephemeral; there is no user authentication, persistence, reconnect, matchmaking, or TLS. Only expose it to a trusted LAN and never directly to the public internet.
 
 ## Security
 

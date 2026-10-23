@@ -153,7 +153,7 @@ export async function buildGameWithEngine({ workspacePath = process.cwd(), proje
     const unityTarget = target === 'desktop' ? ({ darwin: 'StandaloneOSX', win32: 'StandaloneWindows64', linux: 'StandaloneLinux64' }[process.platform] || 'StandaloneLinux64') : target;
     await prepareNewArtifact(output);
     const args = ['-batchmode', '-nographics', '-quit', '-projectPath', projectFile, '-buildTarget', unityTarget, '-executeMethod', buildMethod, '-logFile', '-'];
-    const result = run(binary, args, { cwd: root, env: { ...process.env, OPEN_GAME_BUILD_OUTPUT: output, OPEN_GAME_BUILD_TARGET: unityTarget, OPEN_GAME_BUILD_MODE: mode } });
+    const result = run(binary, args, { cwd: root, env: sanitizedEngineEnvironment({ OPEN_GAME_BUILD_OUTPUT: output, OPEN_GAME_BUILD_TARGET: unityTarget, OPEN_GAME_BUILD_MODE: mode }) });
     if (result.exitCode !== 0) throw new Error(`Unity batch build exited with ${result.exitCode ?? result.signal}.\n${result.output}`);
     if (!await requireArtifact(output)) throw new Error(`Unity reported success but did not create OPEN_GAME_BUILD_OUTPUT at ${output}.\n${result.output}`);
     return { engine: selected.engine, target: unityTarget, projectFile, artifact: output, build: result, limitation: 'The project build method must honor OPEN_GAME_BUILD_OUTPUT. A successful editor batch exit is not runtime, scenario, performance, or quality verification.' };

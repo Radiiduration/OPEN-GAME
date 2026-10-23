@@ -91,12 +91,12 @@ async function collectFiles(directory, base = '') {
     const full = path.join(directory, entry.name); const relative = path.posix.join(base, entry.name);
     if (relative.includes('\\') || relative.split('/').includes('..')) throw new Error(`Unsafe package path: ${relative}`);
     if (entry.isSymbolicLink()) throw new Error(`Cannot package symbolic link: ${relative}`);
-    if (entry.isDirectory() && !['.git', 'node_modules', '.godot', '__pycache__'].includes(entry.name)) {
+    if (entry.isDirectory() && !isExcludedDirectory(relative) && !['.git', 'node_modules', '.godot', '__pycache__'].includes(entry.name)) {
       const nested = await collectFiles(full, relative);
       output.push(...nested);
       totalBytes += nested.reduce((sum, item) => sum + item.size, 0);
       if (output.length > MAX_ARCHIVE_FILES || totalBytes > MAX_ARCHIVE_BYTES) throw new Error('Package exceeds the built-in archive limits.');
-    } else if (entry.isFile() && !isExcludedFile(entry.name)) {
+    } else if (entry.isFile() && !isExcludedFile(relative)) {
       const metadata = await lstat(full);
       if (metadata.isSymbolicLink() || !metadata.isFile() || metadata.nlink > 1) throw new Error(`Cannot package non-regular or hard-linked file: ${relative}`);
       if (metadata.size > MAX_ARCHIVE_BYTES || totalBytes + metadata.size > MAX_ARCHIVE_BYTES) throw new Error(`Package exceeds the ${MAX_ARCHIVE_BYTES / 1024 / 1024} MiB uncompressed limit.`);
@@ -108,10 +108,17 @@ async function collectFiles(directory, base = '') {
   } } finally { await directoryHandle.close().catch(() => {}); }
   return output;
 }
+function isExcludedDirectory(relative) {
+  const parts = relative.toLowerCase().split(path.sep).join('/').split('/');
+  return ['.aws', '.azure', '.ssh', '.gnupg', '.kube', '.docker'].some(directory => parts.includes(directory)) ||
+    parts.some((part, index) => part === '.config' && parts[index + 1] === 'gcloud');
+}
 function isExcludedFile(name) {
-  const lower = name.toLowerCase();
-  return lower === '.ds_store' || lower.endsWith('.log') || lower === '.npmrc' || lower === '.env' || lower.startsWith('.env.') ||
-    /(^|\b)(id_rsa|id_ed25519|id_ecdsa|id_dsa)$/.test(lower) || ['.pem', '.key', '.p12', '.pfx', '.p8'].some(ext => lower.endsWith(ext));
+  const lower = name.toLowerCase().split(path.sep).join('/');
+  const basename = path.posix.basename(lower);
+  const knownCredential = ['credentials', 'credentials.json', 'application_default_credentials.json', 'config.json'].includes(basename) && /(^|\/)(\.docker|\.aws|\.azure|\.kube|\.config\/gcloud)\//.test(lower);
+  return basename === '.ds_store' || basename.endsWith('.log') || basename === '.npmrc' || basename === '.env' || basename.startsWith('.env.') || knownCredential ||
+    /(^|\/)(id_rsa|id_ed25519|id_ecdsa|id_dsa)$/.test(lower) || ['.pem', '.key', '.p12', '.pfx', '.p8'].some(ext => basename.endsWith(ext));
 }
 async function includeCreatorBundle(workspacePath, projectPath, outputDir) {
   for (const [source, target] of [['docs/GAME_DESIGN.md', 'GAME_DESIGN.md'], ['docs/MILESTONES.md', 'PRODUCTION_PLAN.md'], ['assets/ASSET_LEDGER.csv', 'ASSET_LEDGER.csv'], ['.agents/skills/open-game-creator/SKILL.md', 'OPEN_GAME_CREATOR_SKILL.md']]) {
@@ -136,7 +143,7 @@ export async function packageGameDownload({ workspacePath = process.cwd(), proje
   await mkdir(path.dirname(archivePath), { recursive: true });
   await writeZip(entries, archivePath);
   const archiveStat = await lstat(archivePath);
-  return { sourceFolder: sourceDir, downloadZip: archivePath, files: entries.length, bytes: archiveStat.size, excluded: ['.git', 'node_modules', '.godot', '__pycache__', '.DS_Store', '*.log', '.env*', '.npmrc', '*.pem', '*.key', '*.p12', '*.pfx', '*.p8', SSH private-key filenames, hard-linked files, and symbolic links'] };
+  return { sourceFolder: sourceDir, downloadZip: archivePath, files: entries.length, bytes: archiveStat.size, excluded: ['.git', 'node_modules', '.godot', '__pycache__', '.aws', '.azure', '.ssh', '.gnupg', '.kube', '.docker', '.config/gcloud', '.DS_Store', '*.log', '.env*', '.npmrc', known cloud credential files, '*.pem', '*.key', '*.p12', '*.pfx', '*.p8', SSH private-key filenames, hard-linked files, and symbolic links'] };
 }
 
 export async function buildGame({ workspacePath = process.cwd(), projectPath, outputPath }) {
@@ -167,7 +174,7 @@ export async function buildGame({ workspacePath = process.cwd(), projectPath, ou
   await writeFile(path.join(outputDir, 'multiplayer', 'server.cjs'), await readFile(path.join(here, 'multiplayer-server.cjs')));
   await writeFile(path.join(outputDir, 'multiplayer', 'race-sim.js'), await readFile(path.join(here, 'race-sim.js')));
   await writeFile(path.join(outputDir, 'multiplayer', 'package.json'), `${JSON.stringify({ name: `${blueprint.game.slug}-race-server`, version: '1.0.0', private: true, description: `Multiplayer server for ${blueprint.game.title}`, scripts: { start: 'node server.cjs' }, dependencies: { ws: '8.22.0' } }, null, 2)}\n`);
-  await writeFile(path.join(outputDir, 'multiplayer', 'README.md'), `# ${blueprint.game.title} multiplayer server\n\nThis is a small authoritative WebSocket race server for friends/LAN testing. It simulates each connected driver's speed, track progress, boost, and laps on the server. It is not a hosted service, ranked/anti-cheat platform, matchmaking service, or production deployment.\n\n## Start\n\n1. Install Node.js 20 or newer.\n2. Run \`npm install\` in this folder.\n3. Run \`npm start\`.\n4. Keep port 8787 reachable and open the generated game's \`index.html\` on each player's device.\n5. In Online lobby, set the server address (for another device, use the host's LAN IP), choose a name, and connect. All players must use the same address and room.\n\nThe health endpoint is \`http://localhost:8787/health\`. Set \`PORT\` to change the listening port, or \`HOST=0.0.0.0\` only when you intentionally want LAN access. The default bind is loopback-only. Rooms hold up to 8 players and exist only while connected; persistence, reconnect, matchmaking, user authentication, and TLS are not included. The server rate-limits connections/messages and blocks non-local browser origins by default, but anyone on an intentionally exposed LAN can still join and impersonate a display name. Do not expose it to the public internet; use a separately secured server with TLS, authentication, monitoring, moderation, and abuse controls.\n`);
+  await writeFile(path.join(outputDir, 'multiplayer', 'README.md'), `# ${blueprint.game.title} multiplayer server\n\nThis is a small authoritative WebSocket race server for friends/LAN testing. It simulates each connected driver's speed, track progress, boost, and laps on the server. It is not a hosted service, ranked/anti-cheat platform, matchmaking service, or production deployment.\n\n## Start\n\n1. Install Node.js 20 or newer.\n2. Run \`npm install\` in this folder.\n3. Run \`npm start\`.\n4. Keep port 8787 reachable and open the generated game's \`index.html\` on each player's device.\n5. In Online lobby, set the server address (for another device, use the host's LAN IP), choose a name, and connect. All players must use the same address and room.\n\nThe health endpoint is \`http://localhost:8787/health\`. Set \`PORT\` to change the listening port, or \`HOST=0.0.0.0\` only when you intentionally want LAN access. The default bind is loopback-only. Direct \`file://\` play sends the opaque origin \`null\`, which is rejected by default; set \`ALLOW_NULL_ORIGIN=1\` only for local trusted testing, or serve the game from localhost instead. Rooms hold up to 8 players and exist only while connected; persistence, reconnect, matchmaking, user authentication, and TLS are not included. The server rate-limits connections/messages and blocks non-local browser origins by default, but anyone on an intentionally exposed LAN can still join and impersonate a display name. Do not expose it to the public internet; use a separately secured server with TLS, authentication, monitoring, moderation, and abuse controls.\n`);
   await writeFile(path.join(outputDir, 'README.md'), `# ${blueprint.game.title}\n\n${blueprint.game.pitch}\n\n## Play\n\nOpen \`index.html\` in a desktop browser. Use W/A/S/D or arrow keys to drive, Shift to use overtake boost. Adjust downforce and power in the garage before the race. The game includes a multi-lap race, computer-controlled rivals, a live classification, setup tradeoffs saved by career profile, local career reputation, and a finish state.\n\n## Online multiplayer\n\nSee [multiplayer/README.md](multiplayer/README.md). A host runs the included room server; players connect from the Online lobby. The build contains a shared countdown and server-authoritative simulation for connected drivers.\n\n## Build contents\n\nThis folder is the playable game. The adjacent ZIP file is a portable download of the same build. Game code is editable; replace the original sample visuals, sounds, track, AI, and content as your project grows. The current target is a browser prototype, not an AAA-scale game or a packaged native console/desktop binary.\n\n## Originality and provenance\n\nOpen Game generated this from an original brief. Review [ORIGINALITY_REVIEW.md](ORIGINALITY_REVIEW.md), replace sample content with original or properly licensed work, and keep asset sources in your project's provenance ledger. This toolkit cannot certify legal safety or prevent a rights-holder claim.\n`);
   const matches = originalityReview.matches.map(match => `- ${match.reference} in ${match.field}`).join('\n');
   const notes = originalityReview.notes.map(note => `- ${note}`).join('\n');

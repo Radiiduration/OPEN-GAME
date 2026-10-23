@@ -45,7 +45,8 @@ const wss = new WebSocketServer({
   verifyClient: (info, done) => {
     const origin = info.origin;
     const allowedOrigins = new Set((process.env.ALLOWED_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean));
-    const localOrigin = typeof origin === 'string' && (origin === 'null' || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin));
+    const allowOpaqueOrigin = process.env.ALLOW_NULL_ORIGIN === '1';
+    const localOrigin = typeof origin === 'string' && ((origin === 'null' && allowOpaqueOrigin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin));
     if (origin && !localOrigin && !allowedOrigins.has(origin)) return done(false, 403, '{"error":"forbidden"}', { 'Content-Type': 'application/json' });
     const address = info.req.socket.remoteAddress || 'unknown';
     const now = Date.now();
@@ -73,6 +74,7 @@ function roomState(room) {
 }
 function broadcast(room, message) { for (const p of room.players.values()) send(p.ws, message); }
 function join(ws, data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) data = {};
   const roomId = safeText(data.room, 'open-grid', 24).toLowerCase().replace(/[^a-z0-9_-]/g, '-');
   let room = rooms.get(roomId);
   if (!room) {
@@ -114,6 +116,7 @@ wss.on('connection', (ws, request) => {
     messageTimesByAddress.set(remote, addressMessages);
     let message;
     try { message = JSON.parse(raw.toString()); } catch { return send(ws, { type: 'error', message: 'Message must be valid JSON.' }); }
+    if (!message || typeof message !== 'object' || Array.isArray(message)) return send(ws, { type: 'error', message: 'Message must be a JSON object.' });
     if (message.type === 'join' && !ws.player) return join(ws, message);
     if (message.type === 'start' && ws.player) {
       const room = ws.room; const now = Date.now();
@@ -129,7 +132,7 @@ wss.on('connection', (ws, request) => {
     if (message.type === 'input' && ws.player) {
       const now = Date.now(); if (now - ws.player.lastInput < 25) return;
       ws.player.lastInput = now;
-      const input = message.input || {};
+      const input = message.input && typeof message.input === 'object' && !Array.isArray(message.input) ? message.input : {};
       ws.player.input = { throttle: Math.max(0, Math.min(1, Number(input.throttle) || 0)), brake: Math.max(0, Math.min(1, Number(input.brake) || 0)), steer: Math.max(-1, Math.min(1, Number(input.steer) || 0)), boost: Boolean(input.boost) };
     }
   });
