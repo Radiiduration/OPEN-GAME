@@ -4,6 +4,11 @@ build/
 dist/
 *.log
 __pycache__/
+*.py[cod]
+.studio/
+**/.godot/
+games/games/
+launch-video/Open-Game-Launch-v[1-5].mp4
 .env
 .env.*
 !.env.example
