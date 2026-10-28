@@ -48,7 +48,7 @@
     "package:release": "node scripts/package-release.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/server": "^2.3.1",
+    "@modelcontextprotocol/server": "^2.4.0",
     "zod": "^4.0.0",
     "ws": "^8.18.3"
   }
